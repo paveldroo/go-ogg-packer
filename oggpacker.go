@@ -35,7 +35,7 @@ type Packer struct {
 	sampleRate   uint32
 	packetNo     int64
 	granulePos   int64
-	streamState  OggStreamState
+	streamState  *OggStreamState
 	opusDecoder  *opus.Decoder
 }
 
