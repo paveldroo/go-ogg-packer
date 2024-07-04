@@ -23,13 +23,6 @@ type OggStreamState struct {
 	granulePos     int64
 }
 
-type Buffer struct {
-	data      []byte
-	len       uintptr
-	readIndex uintptr
-	alloc     uintptr
-}
-
 type Packer struct {
 	channelCount uint8
 	sampleRate   uint32
@@ -40,5 +33,33 @@ type Packer struct {
 }
 
 func NewPacker(sampleRate, numChannels int) (*Packer, error) {
-	return nil, nil
+	d := opus.NewDecoder()
+	ss := OggStreamState{
+		bodyData:       nil,
+		bodyStorage:    0,
+		bodyFill:       0,
+		bodyReturned:   0,
+		lacingVals:     0,
+		granuleVals:    0,
+		lacingStorage:  0,
+		lacingFill:     0,
+		lacingPacket:   0,
+		lacingReturned: 0,
+		header:         [282]byte{},
+		headerFill:     0,
+		eos:            0,
+		bos:            0,
+		serialNo:       0,
+		pageNo:         0,
+		packetNo:       0,
+		granulePos:     0,
+	}
+	return &Packer{
+		channelCount: uint8(numChannels),
+		sampleRate:   uint32(sampleRate),
+		packetNo:     0,
+		granulePos:   0,
+		streamState:  &ss,
+		opusDecoder:  &d,
+	}, nil
 }
