@@ -1,4 +1,4 @@
-package oggpacker
+package go_ogg_packer
 
 import (
 	"github.com/pion/opus"
@@ -73,13 +73,26 @@ func NewPacker(sampleRate, numChannels int) (*Packer, error) {
 		packetNo:       0,
 		granulePos:     0,
 	}
-	return &Packer{
-		channelCount: uint8(numChannels),
-		sampleRate:   uint32(sampleRate),
+
+	p := Packer{
+		channelCount: 0,
+		sampleRate:   0,
 		packetNo:     0,
 		granulePos:   0,
-		streamState:  &ss,
-		buffer:       &b,
-		opusDecoder:  &d,
-	}, nil
+		streamState:  nil,
+		buffer:       nil,
+		opusDecoder:  nil,
+	}
+
+	status := p.Init(sampleRate, numChannels, sn)
+
+	return &p, nil
+}
+
+func (p *Packer) Init(sampleRate, numChannels, serialNo int) int {
+	p.channelCount = uint8(numChannels)
+	p.sampleRate = uint32(sampleRate)
+	p.packetNo = 1
+	p.granulePos = 0
+
 }
