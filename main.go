@@ -9,7 +9,7 @@ import (
 func main() {
 	p, err := oggpacker.NewPacker(8000, 2)
 	if err != nil {
-		log.Fatalf("%w", err)
+		log.Fatalf("Failed to create ogg packer: %w", err)
 	}
 	fmt.Println(p)
 }

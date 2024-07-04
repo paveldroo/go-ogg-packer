@@ -1,6 +1,10 @@
 package oggpacker
 
-import "github.com/pion/opus"
+import (
+	"github.com/pion/opus"
+	"math/rand"
+	"time"
+)
 
 type OggStreamState struct {
 	bodyData       []byte // bytes from packet bodies
@@ -23,17 +27,32 @@ type OggStreamState struct {
 	granulePos     int64
 }
 
+type Buffer struct {
+	data      []byte
+	len       uintptr
+	readIndex uintptr
+	alloc     uintptr
+}
+
 type Packer struct {
 	channelCount uint8
 	sampleRate   uint32
 	packetNo     int64
 	granulePos   int64
 	streamState  *OggStreamState
+	buffer       *Buffer
 	opusDecoder  *opus.Decoder
 }
 
 func NewPacker(sampleRate, numChannels int) (*Packer, error) {
 	d := opus.NewDecoder()
+	sn := rand.New(rand.NewSource(time.Now().UTC().Unix() % 0x80000000)).Int()
+	b := Buffer{
+		data:      nil,
+		len:       0,
+		readIndex: 0,
+		alloc:     0,
+	}
 	ss := OggStreamState{
 		bodyData:       nil,
 		bodyStorage:    0,
@@ -49,7 +68,7 @@ func NewPacker(sampleRate, numChannels int) (*Packer, error) {
 		headerFill:     0,
 		eos:            0,
 		bos:            0,
-		serialNo:       0,
+		serialNo:       sn,
 		pageNo:         0,
 		packetNo:       0,
 		granulePos:     0,
@@ -60,6 +79,7 @@ func NewPacker(sampleRate, numChannels int) (*Packer, error) {
 		packetNo:     0,
 		granulePos:   0,
 		streamState:  &ss,
+		buffer:       &b,
 		opusDecoder:  &d,
 	}, nil
 }
