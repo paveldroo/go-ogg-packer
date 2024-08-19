@@ -8,6 +8,8 @@ import (
 	"math/rand"
 	"time"
 	"unsafe"
+
+	"github.com/paveldroo/go-ogg-packer/lib"
 )
 
 /*
@@ -17,8 +19,11 @@ import (
 import "C"
 
 type Packer struct {
-	c_object    *C.ogg_opus_packer_t
-	audioBuffer bytes.Buffer
+	c_object     *C.ogg_opus_packer_t
+	audioBuffer  bytes.Buffer
+	sampleRate   int
+	numChannels  int
+	samplesCount int
 }
 
 func New(sampleRate, numChannels int) (*Packer, error) {
@@ -31,7 +36,12 @@ func New(sampleRate, numChannels int) (*Packer, error) {
 	if err := initStatusToError(int(status)); err != nil {
 		return nil, err
 	}
-	return &Packer{c_object: oggPacker}, nil
+	return &Packer{
+		c_object:     oggPacker,
+		sampleRate:   sampleRate,
+		numChannels:  numChannels,
+		samplesCount: lib.SamplesCnt(sampleRate),
+	}, nil
 }
 
 /*If number of samples is unknow samplesCount < 0*/
@@ -100,7 +110,7 @@ func (p *Packer) addPrevChunkFromBuffer(eos bool) error {
 	if p.audioBuffer.Len() > 0 {
 		prevChunk := p.audioBuffer.Bytes()
 		success := C.ogg_opus_packer_add_opus_chunk(p.c_object,
-			unsafe.Pointer(&prevChunk[0]), C.size_t(len(prevChunk)), C.int(eosNumber), C.int(-1))
+			unsafe.Pointer(&prevChunk[0]), C.size_t(len(prevChunk)), C.int(eosNumber), C.int(p.samplesCount))
 		if success == -1 {
 			return errors.New("failed to add chunk to the stream")
 		} else if success < -1 {
