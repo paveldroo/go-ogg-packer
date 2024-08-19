@@ -3,6 +3,7 @@ package cgo_oggpacker
 
 import "C"
 import (
+	"bytes"
 	"errors"
 	"math/rand"
 	"time"
@@ -16,7 +17,8 @@ import (
 import "C"
 
 type Packer struct {
-	c_object *C.ogg_opus_packer_t
+	c_object    *C.ogg_opus_packer_t
+	audioBuffer bytes.Buffer
 }
 
 func New(sampleRate, numChannels int) (*Packer, error) {
@@ -33,44 +35,80 @@ func New(sampleRate, numChannels int) (*Packer, error) {
 }
 
 /*If number of samples is unknow samplesCount < 0*/
-func (packer *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
+func (p *Packer) AddChunk(data []byte) error {
+	if err := p.addPrevChunkFromBuffer(false); err != nil {
+		return errors.New("failed add previous chunk from buffer")
+	}
+	_, err := p.audioBuffer.Write(data)
+	if err != nil {
+		return errors.New("failed to add new chunk to the oggPacker: " + err.Error())
+	}
+
+	return nil
+}
+
+func (p *Packer) ReadPages() ([]byte, error) {
+	if status := C.ogg_opus_packer_collect_pages(p.c_object); status == -1 {
+		return nil, errors.New("Failed to add chunk to buffer")
+	}
+	return p.readBuffer(), nil
+}
+
+func (p *Packer) FlushPages() ([]byte, error) {
+	if status := C.ogg_opus_packer_flush_pages(p.c_object); status == -1 {
+		return nil, errors.New("Failed to add chunk to buffer")
+	}
+	return p.readBuffer(), nil
+}
+
+func (p *Packer) Close() {
+	C.ogg_opus_packer_destroy(p.c_object)
+}
+
+func (p *Packer) ReadAudioData() ([]byte, error) {
+	defer p.Close()
+	if err := p.addPrevChunkFromBuffer(true); err != nil {
+		return nil, errors.New("failed add previous chunk from buffer" + err.Error())
+	}
+
+	oggPages, err := p.ReadPages()
+	if err != nil {
+		return nil, errors.New("failed read ogg pages from Packer" + err.Error())
+	}
+
+	flushPages, err := p.FlushPages()
+	if err != nil {
+		return nil, errors.New("failed flush ogg pages from Packer" + err.Error())
+	}
+
+	oggPages = append(oggPages, flushPages...)
+	return oggPages, nil
+}
+
+func (p *Packer) readBuffer() []byte {
+	n := C.size_t(0)
+	buffer := C.ogg_opus_paker_get_buffer(p.c_object, &n)
+	C.ogg_opus_packer_clear_buffer(p.c_object)
+	return C.GoBytes(unsafe.Pointer(buffer), C.int(n))
+}
+
+func (p *Packer) addPrevChunkFromBuffer(eos bool) error {
 	eosNumber := 0
 	if eos {
 		eosNumber = 1
 	}
-	status := C.ogg_opus_packer_add_opus_chunk(packer.c_object,
-		unsafe.Pointer(&data[0]), C.size_t(len(data)), C.int(eosNumber), C.int(samplesCount))
-	if status == -1 {
-		return errors.New("Failed to add chunk to the stream")
-	} else if status < -1 {
-		return errors.New("Failed to decode opus chunck:" + opusDecoderStatusToError(int(status)+1).Error())
+	if p.audioBuffer.Len() > 0 {
+		prevChunk := p.audioBuffer.Bytes()
+		success := C.ogg_opus_packer_add_opus_chunk(p.c_object,
+			unsafe.Pointer(&prevChunk[0]), C.size_t(len(prevChunk)), C.int(eosNumber), C.int(-1))
+		if success == -1 {
+			return errors.New("failed to add chunk to the stream")
+		} else if success < -1 {
+			return errors.New("failed to decode opus chunk:" + opusDecoderStatusToError(int(success)+1).Error())
+		}
 	}
+
 	return nil
-}
-
-func (packer *Packer) ReadPages() ([]byte, error) {
-	if status := C.ogg_opus_packer_collect_pages(packer.c_object); status == -1 {
-		return nil, errors.New("Failed to add chunk to buffer")
-	}
-	return packer.readBuffer(), nil
-}
-
-func (packer *Packer) FlushPages() ([]byte, error) {
-	if status := C.ogg_opus_packer_flush_pages(packer.c_object); status == -1 {
-		return nil, errors.New("Failed to add chunk to buffer")
-	}
-	return packer.readBuffer(), nil
-}
-
-func (packer *Packer) Close() {
-	C.ogg_opus_packer_destroy(packer.c_object)
-}
-
-func (packer *Packer) readBuffer() []byte {
-	n := C.size_t(0)
-	buffer := C.ogg_opus_paker_get_buffer(packer.c_object, &n)
-	C.ogg_opus_packer_clear_buffer(packer.c_object)
-	return C.GoBytes(unsafe.Pointer(buffer), C.int(n))
 }
 
 func opusDecoderStatusToError(status int) error {
