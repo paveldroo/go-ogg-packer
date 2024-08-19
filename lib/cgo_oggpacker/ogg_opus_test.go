@@ -4,22 +4,33 @@ import (
 	"testing"
 
 	"github.com/paveldroo/go-ogg-packer/lib/cgo_oggpacker"
-	"github.com/paveldroo/go-ogg-packer/testdata"
+	"github.com/paveldroo/go-ogg-packer/lib/cgo_oggpacker/testdata"
 )
 
-func TestPacker_ReadPages(t *testing.T) {
+func TestPacker_ReadAudioData(t *testing.T) {
 	sampleRate := 8000
 	numChannels := 1
 
 	oggPacker, err := cgo_oggpacker.New(sampleRate, numChannels)
 	if err != nil {
-		t.Fatalf("create oggPacker: %s", err)
+		t.Fatalf("create oggPacker: %s", err.Error())
 	}
-	chunkSender := testdata.NewChunkSender(testdata.MustReferencePath(), 512)
+	chunkSender := testdata.AudioByChunks()
 
-	for chunk := range chunkSender {
-		oggPacker.AddChunk(chunk)
+	for _, chunk := range chunkSender {
+		if err := oggPacker.AddChunk(chunk); err != nil {
+			t.Fatalf("add chunk: %s", err.Error())
+		}
+	}
 
-		// TODO: need to add chunkWrapper with more convenient API for adding chunks, CGO implementation is too low level for testing
+	resData, err := oggPacker.ReadAudioData()
+	if err != nil {
+		t.Fatalf("readAudioData from packer: %s", err.Error())
+	}
+
+	refData := testdata.RefOGGData()
+
+	if !testdata.CompareOggAudio(resData, refData) {
+		t.Fatalf("result and reference audio files are not the same")
 	}
 }
