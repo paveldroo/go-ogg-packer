@@ -19,6 +19,9 @@ func TestPacker_ReadPages(t *testing.T) {
 
 	for chunk := range chunkSender {
 		oggPacker.AddChunk(chunk)
+		oggPacker.AddChunk(chunk)
+		oggPacker.AddChunk(chunk)
+		oggPacker.AddChunk(chunk)
 
 		// TODO: need to add chunkWrapper with more convenient API for adding chunks, CGO implementation is too low level for testing.
 	}
