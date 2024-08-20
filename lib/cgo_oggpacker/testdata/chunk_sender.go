@@ -19,7 +19,7 @@ func AudioByChunks() [][]byte {
 	for i := 0; i < len(d); i += chunkSize {
 		end := i + chunkSize
 		if end > len(d) {
-			end = len(d) - 1
+			end = len(d)
 		}
 		res = append(res, d[i:end])
 	}
