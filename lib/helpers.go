@@ -1,10 +1,12 @@
 package lib
 
 import (
+	"bytes"
 	"encoding/binary"
 	"log"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/paveldroo/go-ogg-packer/lib/opus_decoder"
 )
@@ -72,6 +74,42 @@ func MustWriteS16File(data []int16) {
 
 	var fPath = path.Join(wDir, resultFilePath)
 	if err := os.WriteFile(fPath, buf, 0666); err != nil {
+		log.Fatalf("write result file: %s", err.Error())
+	}
+}
+
+func ExtractRawOpusFromOGG() []byte {
+	const opusOGGFilePath = "cgo_oggpacker/testdata/audio/ref/office.opus.ogg"
+	d, err := os.ReadFile(opusOGGFilePath)
+	if err != nil {
+		log.Fatalf("open opus ogg file path: %s", err.Error())
+	}
+
+	pattern := regexp.MustCompile("OggS")
+	pageBoundaries := pattern.FindAllIndex(d, -1)
+	buf := bytes.Buffer{}
+	for i := range pageBoundaries {
+		if i < 2 {
+			continue
+		}
+		currPageStartIdx := pageBoundaries[i][0]
+		prevOGGDataEnd := pageBoundaries[i-1][0] + 26
+		opusData := d[prevOGGDataEnd:currPageStartIdx]
+		buf.Write(opusData)
+	}
+	res := buf.Bytes()
+	return res
+}
+
+func MustWriteOpusFile(data []byte) {
+	const resultFilePath = "cgo_oggpacker/testdata/audio/office_result.opus"
+	wDir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("get current work directory: %s", err.Error())
+	}
+
+	var fPath = path.Join(wDir, resultFilePath)
+	if err := os.WriteFile(fPath, data, 0666); err != nil {
 		log.Fatalf("write result file: %s", err.Error())
 	}
 }
