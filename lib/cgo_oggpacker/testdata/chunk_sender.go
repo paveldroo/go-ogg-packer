@@ -19,7 +19,7 @@ func AudioByChunks() [][]byte {
 	for i := 0; i < len(d); i += chunkSize {
 		end := i + chunkSize
 		if end > len(d) {
-			end = len(d) - 1
+			end = len(d)
 		}
 		res = append(res, d[i:end])
 	}
@@ -28,7 +28,7 @@ func AudioByChunks() [][]byte {
 }
 
 func RefOGGData() []byte {
-	const testFilePath = "testdata/audio/office.alaw_raw"
+	const testFilePath = "testdata/audio/ref/office.opus.ogg"
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())

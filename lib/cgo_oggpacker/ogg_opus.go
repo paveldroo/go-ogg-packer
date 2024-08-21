@@ -116,6 +116,8 @@ func (p *Packer) addPrevChunkFromBuffer(eos bool) error {
 		} else if success < -1 {
 			return errors.New("failed to decode opus chunk:" + opusDecoderStatusToError(int(success)+1).Error())
 		}
+
+		p.audioBuffer.Reset()
 	}
 
 	return nil
