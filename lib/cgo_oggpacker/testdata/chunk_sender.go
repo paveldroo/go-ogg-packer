@@ -1,6 +1,9 @@
 package testdata
 
 import (
+	"encoding/binary"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -8,7 +11,7 @@ import (
 	"github.com/paveldroo/go-ogg-packer/lib"
 )
 
-const sampleRate = 8000
+const sampleRate = 48000
 
 func AudioByChunks() [][]byte {
 	var chunkSize = lib.SamplesCnt(sampleRate)
@@ -28,7 +31,7 @@ func AudioByChunks() [][]byte {
 }
 
 func RefOGGData() []byte {
-	const testFilePath = "testdata/audio/ref/office.opus.ogg"
+	const testFilePath = "testdata/audio/ref/demo_48k_1ch.opus"
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())
@@ -41,4 +44,37 @@ func RefOGGData() []byte {
 	}
 
 	return d
+}
+
+func rawPCM() []byte {
+	wDir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("get current work directory: %s", err.Error())
+	}
+	file, err := os.Open(path.Join(wDir, "testdata/audio/raw_pcm_48k_1ch.dat"))
+	if err != nil {
+		log.Fatalf("open file: %s", err.Error())
+	}
+	defer file.Close()
+
+	var samples []byte
+
+	for {
+		var sample int16
+		err := binary.Read(file, binary.LittleEndian, &sample)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("read one sample from file: %s", err.Error())
+		}
+		sampleBytes := make([]byte, 2)
+		binary.LittleEndian.PutUint16(sampleBytes, uint16(sample))
+		samples = append(samples, sampleBytes...)
+	}
+
+	fmt.Println("Number of samples read:", len(samples))
+	fmt.Println("First 10 samples:", samples[:20])
+
+	return samples
 }
