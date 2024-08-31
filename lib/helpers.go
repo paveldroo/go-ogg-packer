@@ -20,7 +20,7 @@ func SamplesCnt(sampleRate int) int {
 }
 
 func MustWriteResultFile(data []byte) {
-	const resultFilePath = "testdata/audio/office_result.ogg"
+	const resultFilePath = "testdata/audio/result.ogg"
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())
