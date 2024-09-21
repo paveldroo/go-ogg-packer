@@ -1,2 +1,4 @@
 github.com/pion/opus v0.0.0-20240409032234-867e82f70014 h1:sUwpWYoEATtJINqtNS3jyUIGwTD3Km0UpiIJCbBj9Eg=
 github.com/pion/opus v0.0.0-20240409032234-867e82f70014/go.mod h1:APGXJHkH8qlbefy7R7/i6a2w/nvXC85hnHm8FjaGgMo=
+gopkg.in/hraban/opus.v2 v2.0.0-20230925203106-0188a62cb302 h1:xeVptzkP8BuJhoIjNizd2bRHfq9KB9HfOLZu90T04XM=
+gopkg.in/hraban/opus.v2 v2.0.0-20230925203106-0188a62cb302/go.mod h1:/L5E7a21VWl8DeuCPKxQBdVG5cy+L0MRZ08B1wnqt7g=
