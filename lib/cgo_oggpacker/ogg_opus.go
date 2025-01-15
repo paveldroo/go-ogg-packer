@@ -37,7 +37,7 @@ func (packer *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
 	if status == -1 {
 		return errors.New("Failed to add chunk to the stream")
 	} else if status < -1 {
-		return errors.New("Failed to decode opus chunck:" + opusDecoderStatusToError(int(status)+1).Error())
+		return errors.New("Failed to decode opus chunk:" + opusDecoderStatusToError(int(status)+1).Error())
 	}
 	return nil
 }
