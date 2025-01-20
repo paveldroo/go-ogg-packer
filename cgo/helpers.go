@@ -3,18 +3,40 @@ package cgo_oggpacker
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"io"
 	"log"
 	"os"
 	"path"
 
-	"github.com/hraban/opus"
+	"gopkg.in/hraban/opus.v2"
 )
 
 const sampleRate = 48000
 const channels = 1
-const testFilePath = "testdata/demo_48k_1ch.opus"
+const testFilePath = "testdata/raw_opus.opus"
+const wavFilePath = "testdata/demo_48k_1ch_raw_opus.wav"
+
+func S16FromWav() []int16 {
+	d, err := os.ReadFile(wavFilePath)
+	if err != nil {
+		log.Fatalf("open wav file: %s", err.Error())
+	}
+
+	reader := bytes.NewReader(d)
+	numValues := len(d) / 2
+
+	result := make([]int16, numValues)
+
+	for i := range result {
+		var value int16
+		if err := binary.Read(reader, binary.LittleEndian, &value); err != nil {
+			log.Fatalf("binary read wav file: %s", err.Error())
+		}
+		result[i] = value
+	}
+
+	return result
+}
 
 func ExtractOpusFromOGG() []byte {
 	f, err := os.Open(testFilePath)
@@ -52,8 +74,10 @@ func ExtractOpusFromOGG() []byte {
 
 func AudioByChunks() [][]byte {
 	var chunkSize = SamplesCnt(sampleRate)
-	// d := RefOGGData()
-	d := ExtractOpusFromOGG()
+	d, err := os.ReadFile(testFilePath)
+	if err != nil {
+		log.Fatalf("audio by chunks: open file: %s", err.Error())
+	}
 
 	var res [][]byte
 
@@ -65,27 +89,35 @@ func AudioByChunks() [][]byte {
 		res = append(res, d[i:end])
 	}
 
-	fmt.Println("bytes result", res)
-	fmt.Println("bytes len", len(res))
-
 	return res
 }
 
-func mustWriteOpusFile(data []byte) {
-	const resultFilePath = "testdata/office_result.opus"
+func AudioFull() []byte {
+	d, err := os.ReadFile(testFilePath)
+	if err != nil {
+		log.Fatalf("audio full: open file: %s", err.Error())
+	}
+
+	return d
+}
+
+func mustWriteOpusFile(name string, data []byte) {
+	if name == "" {
+		name = "testdata/raw_opus.opus"
+	}
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())
 	}
 
-	var fPath = path.Join(wDir, resultFilePath)
+	var fPath = path.Join(wDir, name)
 	if err := os.WriteFile(fPath, data, 0666); err != nil {
 		log.Fatalf("write result file: %s", err.Error())
 	}
 }
 
 func mustWriteWavFile(data []byte) {
-	const resultFilePath = "testdata/office_result.wav"
+	const resultFilePath = "testdata/demo_result.wav"
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	ogg_packer "github.com/paveldroo/go-ogg-packer/lib"
+	"gitlab.tcsbank.ru/speech/libanysound/ogg_packer"
 )
 
 type oggPackerWrapper struct {
@@ -26,7 +26,7 @@ func newOggPackerWrapper(sampleRate int, numChannels int) (*oggPackerWrapper, er
 func (packerWrapper *oggPackerWrapper) addChunk(chunk []byte) error {
 	if packerWrapper.audioBuffer.Len() > 0 {
 		previousChunk := packerWrapper.audioBuffer.Bytes()
-		err := packerWrapper.packer.AddChunk(previousChunk, false, -1)
+		err := packerWrapper.packer.AddChunk(previousChunk, false, 960)
 		if err != nil {
 			return fmt.Errorf("add chunk to ogg packer: %w", err)
 		}
@@ -40,11 +40,15 @@ func (packerWrapper *oggPackerWrapper) addChunk(chunk []byte) error {
 }
 
 func (packerWrapper *oggPackerWrapper) readAudioData() ([]byte, error) {
-	// fmt.Println("audio buffer", packerWrapper.audioBuffer.Bytes())
-	// err := packerWrapper.packer.AddChunk(packerWrapper.audioBuffer.Bytes(), true, -1)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("add chunk to ogg packer: %w", err)
-	// }
+	if packerWrapper.audioBuffer.Len() > 0 {
+		lastChunk := packerWrapper.audioBuffer.Bytes()
+		fmt.Println("lastChunk len", len(lastChunk))
+		err := packerWrapper.packer.AddChunk(lastChunk, true, len(lastChunk))
+		if err != nil {
+			return nil, fmt.Errorf("add chunk to ogg packer: %w", err)
+		}
+	}
+
 	oggPages, err := packerWrapper.packer.ReadPages()
 	if err != nil {
 		return nil, fmt.Errorf("get pages from ogg packer: %w", err)

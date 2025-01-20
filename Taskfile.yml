@@ -1,0 +1,12 @@
+version: "3"
+
+dotenv: ['.env']
+
+env:
+  CGO_CPPFLAGS: -I /opt/homebrew/include
+  CGO_LDFLAGS: -L /opt/homebrew/lib
+
+tasks:
+  test:
+    cmds:
+      - go test github.com/paveldroo/go-ogg-packer/cgo -run "Test_OGGPacker"
