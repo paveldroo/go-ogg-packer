@@ -1,5 +1,5 @@
 // Package cgo_oggpacker is a CGO ogg packer implementation which a new native Go implementation will be tested against.
-package cgo_oggpacker
+package ogg_packer
 
 import "C"
 import (

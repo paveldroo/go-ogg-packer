@@ -11,28 +11,6 @@ func Test_OGGPacker(t *testing.T) {
 		t.Fatalf("create ogg packer wrapper: %s", err.Error())
 	}
 
-	// const opusOGGFilePath = "../lib/cgo_oggpacker/testdata/audio/ref/demo_48k_1ch.opus"
-	// d, err := os.ReadFile(opusOGGFilePath)
-	// if err != nil {
-	// 	t.Fatalf("open opus ogg file path: %s", err.Error())
-	// }
-
-	// chunk := []byte{}
-
-	// for _, b := range d {
-	// 	if len(chunk) == 20 {
-	// 		wrapper.addChunk(chunk)
-	// 		chunk = []byte{}
-	// 	}
-
-	// 	chunk = append(chunk, b)
-	// }
-	//
-
-
-	НАДО ПРИДУМАТЬ КАК ПОЛУЧАТЬ ЧИСТЫЙ СТРИМ OPUS, СЕЙЧАС СЫПЕМСЯ ИЗЗА ТОГО ЧТО ПЫТАЕМСЯ ЗАСУНУТЬ OGG ФАЙЛ
-
-
 	d := AudioByChunks()
 
 	for _, chunk := range d {
@@ -46,4 +24,5 @@ func Test_OGGPacker(t *testing.T) {
 
 	fmt.Println("res", res)
 
+	mustWriteOpusFile(res)
 }

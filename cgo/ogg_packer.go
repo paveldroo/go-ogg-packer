@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"gitlab.tcsbank.ru/speech/libanysound/ogg_packer"
+	ogg_packer "github.com/paveldroo/go-ogg-packer/lib"
 )
 
 type oggPackerWrapper struct {
