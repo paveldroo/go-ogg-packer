@@ -23,3 +23,6 @@ go.work.sum
 
 # IDE
 .idea/
+
+# OS
+.DS_Store

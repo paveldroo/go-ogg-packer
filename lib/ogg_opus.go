@@ -1,5 +1,5 @@
 // Package cgo_oggpacker is a CGO ogg packer implementation which a new native Go implementation will be tested against.
-package cgo_oggpacker
+package ogg_packer
 
 import "C"
 import (
@@ -37,7 +37,7 @@ func (packer *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
 	if status == -1 {
 		return errors.New("Failed to add chunk to the stream")
 	} else if status < -1 {
-		return errors.New("Failed to decode opus chunck:" + opusDecoderStatusToError(int(status)+1).Error())
+		return errors.New("Failed to decode opus chunk:" + opusDecoderStatusToError(int(status)+1).Error())
 	}
 	return nil
 }
