@@ -1,6 +1,11 @@
 // Package cgo_oggpacker is a CGO ogg packer implementation which a new native Go implementation will be tested against.
 package ogg_packer
 
+/*
+#cgo pkg-config: opus ogg
+#cgo darwin CFLAGS: -I./opus
+#include "ogg_opus_packer.h"
+*/
 import "C"
 import (
 	"errors"

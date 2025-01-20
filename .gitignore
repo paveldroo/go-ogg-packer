@@ -25,4 +25,4 @@ go.work.sum
 .idea/
 
 # OS
-*.DS_Store
+**/.DS_Store
