@@ -1,8 +1,6 @@
 package opus_tools
 
 import (
-	"fmt"
-
 	"gopkg.in/hraban/opus.v2"
 )
 
@@ -79,29 +77,4 @@ func (converter *Converter) EncodeWithPadding(samples []int16) ([][]byte, error)
 		encoded = append(encoded, oneOpusPacket)
 	}
 	return encoded, nil
-}
-
-func (converter *Converter) DecodeOneChunk(encodedPacket []byte) ([]int16, error) {
-	if len(encodedPacket) > converter.config.BufferSize {
-		return []int16{}, fmt.Errorf("%w: %d bytes", ErrTooLargePacket, converter.config.BufferSize)
-	}
-	pcm := make([]int16, converter.frameSizeSamples)
-	n, err := converter.decoder.decode(encodedPacket, pcm)
-	if err != nil {
-		return nil, err
-	}
-	pcm = pcm[:n]
-	return pcm, nil
-}
-
-func (converter *Converter) Decode(encoded [][]byte) ([]int16, error) {
-	samples := make([]int16, 0, int(float64(len(encoded))*float64(converter.config.BufferSize)*converter.config.FrameSize.Seconds()))
-	for i := range encoded {
-		pcm, err := converter.DecodeOneChunk(encoded[i])
-		if err != nil {
-			return []int16{}, err
-		}
-		samples = append(samples, pcm...)
-	}
-	return samples, nil
 }

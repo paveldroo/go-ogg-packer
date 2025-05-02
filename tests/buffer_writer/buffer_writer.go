@@ -24,7 +24,7 @@ func NewAudioBuffer(
 	}
 }
 
-func (s *AudioBufferWriter) SendS16Chunk(chunk []int16) error { //nolint:cyclop // SIMPLIFY
+func (s *AudioBufferWriter) SendS16Chunk(chunk []int16) error {
 	s.lastS16Buffer = append(s.lastS16Buffer, chunk...)
 	currentOpusPackets, pos, err := s.opusConverter.Encode(s.lastS16Buffer)
 	if err != nil {

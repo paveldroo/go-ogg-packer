@@ -4,8 +4,8 @@ import "time"
 
 const (
 	SampleRate  = 48000
-	frameSize   = time.Duration(60) * time.Millisecond
 	numChannels = 1
+	frameSize   = time.Duration(60) * time.Millisecond
 	bufferSize  = 2048
 )
 

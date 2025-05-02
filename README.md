@@ -15,7 +15,7 @@
 - **RFC 6716**: [The Ogg Encapsulation Format Version 0](https://www.ietf.org/rfc/rfc3533.txt)
 
 ### Running
-Check out [examples](examples) of using Go Ogg Packer.
+Check out [opus buffer writer](tests/buffer_writer/buffer_writer.go) for example of using Go Ogg Packer.
 
 ### Roadmap
 - [x] Use AudioBufferWriter wrapper for CGo ogg_packer to get green tests before implementing native Go code
