@@ -21,9 +21,6 @@ go.work.sum
 # env file
 .env
 
-# IDE
-.idea/
-
 # OS
 **/.DS_Store
 
