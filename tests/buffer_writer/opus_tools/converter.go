@@ -9,16 +9,11 @@ import (
 type Converter struct {
 	config           *Config
 	encoder          *encoderWrapper
-	decoder          *decoderWrapper
 	frameSizeSamples int
 }
 
 func NewOpusConverter(config *Config) (*Converter, error) {
 	encoder, err := newEncoderWrapper(config.SampleRate, config.NumChannels, opus.AppAudio)
-	if err != nil {
-		return nil, err
-	}
-	decoder, err := newDecoderWrapper(config.SampleRate, config.NumChannels)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +23,6 @@ func NewOpusConverter(config *Config) (*Converter, error) {
 
 	return &Converter{
 		encoder:          encoder,
-		decoder:          decoder,
 		config:           config,
 		frameSizeSamples: int(frameSizeSamples),
 	}, nil
