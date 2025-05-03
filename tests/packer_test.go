@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	baseOggFilename = "testdata/base.ogg"
-	rawOpusFilename = "testdata/48k_1ch_raw.opus"
+	baseOggFilename = "testdata/want/48k_1ch.ogg"
+	rawOpusFilename = "testdata/48k_1ch.opus_raw"
 )
 
 func TestPacker1ch48khz(t *testing.T) {
@@ -37,7 +37,7 @@ func TestPacker1ch48khz(t *testing.T) {
 		t.Fatalf("read all pages from packer: %s", err.Error())
 	}
 
-	fname := fmt.Sprintf("testdata/result/ogg_packer_result_%d.ogg", time.Now().UnixNano())
+	fname := fmt.Sprintf("testdata/ogg_packer_result_%d.ogg", time.Now().UnixNano())
 	writeOggFile(t, fname, oggData)
 
 	baseData, err := os.ReadFile(baseOggFilename)

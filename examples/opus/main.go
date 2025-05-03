@@ -14,7 +14,7 @@ import (
 const (
 	channelCount    = 1
 	sampleRate      = 48000
-	rawOpusFilename = "48k_1ch_raw.opus"
+	rawOpusFilename = "48k_1ch.opus_raw"
 )
 
 func main() {
