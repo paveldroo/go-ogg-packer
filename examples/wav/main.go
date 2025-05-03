@@ -16,16 +16,22 @@ import (
 
 const (
 	sampleRate  = 48000
+	channels    = 1
 	wavFilePath = "48k_1ch.wav"
 )
 
 func main() {
-	converter, err := opus_tools.NewOpusConverter(opus_tools.NewDefaultConfig())
+	converter, err := opus_tools.NewOpusConverter(&opus_tools.Config{
+		SampleRate:  sampleRate,
+		NumChannels: channels,
+		FrameSize:   time.Duration(60) * time.Millisecond,
+		BufferSize:  2048,
+	})
 	if err != nil {
 		log.Fatalf("create opus converter: %s", err.Error())
 	}
 
-	packer, err := packer.New(1, sampleRate)
+	packer, err := packer.New(channels, sampleRate)
 	if err != nil {
 		log.Fatalf("create ogg packer: %s", err.Error())
 	}

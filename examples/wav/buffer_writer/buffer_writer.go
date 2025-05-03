@@ -57,6 +57,7 @@ func (s *AudioBufferWriter) GetResult() ([]byte, error) {
 	}
 
 	s.result = oggPages
+	saveSlicesForTests(s.allOpusPackets)
 
 	return s.result, nil
 }
@@ -86,7 +87,7 @@ func (s *AudioBufferWriter) flushLastS16Buffer() error {
 }
 
 func saveSlicesForTests(data [][]byte) error {
-	f, err := os.Create("48k_1ch.opus_raw")
+	f, err := os.Create("8000k_1ch.opus_raw")
 	if err != nil {
 		panic(err)
 	}
