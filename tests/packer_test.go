@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"path"
 	"reflect"
 	"testing"
 	"time"
@@ -24,11 +25,7 @@ func TestPacker1ch48khz(t *testing.T) {
 		t.Fatalf("create ogg packer: %s", err.Error())
 	}
 
-	rawOpusData, err := getRawOpusPackets(t)
-	if err != nil {
-		t.Fatalf("get result from audio buffer: %s", err.Error())
-	}
-
+	rawOpusData := getRawOpusPackets(t)
 	for _, packet := range rawOpusData {
 		if err := packer.AddChunk(packet, false, -1); err != nil {
 			t.Fatalf("send opus chunk to packer: %s", err.Error())
@@ -41,7 +38,7 @@ func TestPacker1ch48khz(t *testing.T) {
 	}
 
 	fname := fmt.Sprintf("testdata/result/ogg_packer_result_%d.ogg", time.Now().UnixNano())
-	mustWriteOggFile(fname, oggData)
+	writeOggFile(t, fname, oggData)
 
 	baseData, err := os.ReadFile(baseOggFilename)
 	if err != nil {
@@ -53,18 +50,31 @@ func TestPacker1ch48khz(t *testing.T) {
 	}
 }
 
-func getRawOpusPackets(t *testing.T) ([][]byte, error) {
+func getRawOpusPackets(t *testing.T) [][]byte {
 	t.Helper()
 
 	f, err := os.Open(rawOpusFilename)
 	if err != nil {
-		return nil, fmt.Errorf("read raw opus file: %w", err)
+		t.Fatalf("read raw opus file: %s", err.Error())
 	}
 	decoder := gob.NewDecoder(f)
 	var audioData [][]byte
 	if err := decoder.Decode(&audioData); err != nil {
-		return nil, fmt.Errorf("decode data from file: %w", err)
+		t.Fatalf("decode data from file: %s", err.Error())
 	}
 
-	return audioData, nil
+	return audioData
+}
+
+func writeOggFile(t *testing.T, name string, data []byte) {
+	t.Helper()
+	wDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get current work directory: %s", err.Error())
+	}
+
+	var fPath = path.Join(wDir, name)
+	if err := os.WriteFile(fPath, data, 0666); err != nil {
+		t.Fatalf("write result file: %s", err.Error())
+	}
 }

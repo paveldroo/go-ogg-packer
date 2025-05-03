@@ -6,7 +6,7 @@ import (
 	"os"
 
 	packer "github.com/paveldroo/go-ogg-packer"
-	"github.com/paveldroo/go-ogg-packer/example/wav/buffer_writer/opus_tools"
+	"github.com/paveldroo/go-ogg-packer/examples/wav/buffer_writer/opus_tools"
 )
 
 type AudioBufferWriter struct {
@@ -58,8 +58,6 @@ func (s *AudioBufferWriter) GetResult() ([]byte, error) {
 
 	s.result = oggPages
 
-	SaveSlices(s.allOpusPackets)
-
 	return s.result, nil
 }
 
@@ -87,8 +85,8 @@ func (s *AudioBufferWriter) flushLastS16Buffer() error {
 	return nil
 }
 
-func SaveSlices(data [][]byte) error {
-	f, err := os.Create("demo_48k_1ch.opus_raw")
+func saveSlicesForTests(data [][]byte) error {
+	f, err := os.Create("48k_1ch.opus_raw")
 	if err != nil {
 		panic(err)
 	}
