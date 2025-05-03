@@ -12,7 +12,7 @@ import (
 	"github.com/paveldroo/go-ogg-packer/tests/buffer_writer/opus_tools"
 )
 
-const baseFilename = "testdata/base.opus"
+const baseFilename = "testdata/base.ogg"
 
 func TestPacker(t *testing.T) {
 	converter, err := opus_tools.NewOpusConverter(opus_tools.NewDefaultConfig())
@@ -44,8 +44,8 @@ func TestPacker(t *testing.T) {
 		t.Fatalf("get result from audio buffer: %s", err.Error())
 	}
 
-	fname := fmt.Sprintf("testdata/result/ogg_packer_result_%d.opus", time.Now().UnixNano())
-	mustWriteOpusFile(fname, audioContent)
+	fname := fmt.Sprintf("testdata/result/ogg_packer_result_%d.ogg", time.Now().UnixNano())
+	mustWriteOggFile(fname, audioContent)
 
 	baseData, err := os.ReadFile(baseFilename)
 	if err != nil {

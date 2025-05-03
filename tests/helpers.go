@@ -33,7 +33,7 @@ func s16FromWav() []int16 {
 	return result
 }
 
-func mustWriteOpusFile(name string, data []byte) {
+func mustWriteOggFile(name string, data []byte) {
 	wDir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("get current work directory: %s", err.Error())
