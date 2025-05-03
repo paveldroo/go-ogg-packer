@@ -17,21 +17,21 @@ func TestPacker(t *testing.T) {
 		channels   int
 		sampleRate int
 	}{
-		// {
-		// 	name:       "48k 1ch",
-		// 	channels:   1,
-		// 	sampleRate: 48000,
-		// },
+		{
+			name:       "48k 1ch",
+			channels:   1,
+			sampleRate: 48000,
+		},
 		// {
 		// 	name:       "48k 2ch",
 		// 	channels:   2,
 		// 	sampleRate: 48000,
 		// },
-		{
-			name:       "8k 1ch",
-			channels:   1,
-			sampleRate: 8000,
-		},
+		// {
+		// 	name:       "8k 1ch",
+		// 	channels:   1,
+		// 	sampleRate: 8000,
+		// },
 		// {
 		// 	name:       "8k 2ch",
 		// 	channels:   2,
@@ -46,7 +46,7 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("create ogg packer: %s", err.Error())
 			}
 
-			opusFilename := fmt.Sprintf("testdata/%dk_%dch.opus_raw", tt.sampleRate, tt.channels)
+			opusFilename := fmt.Sprintf("testdata/opus_raw/%dk_%dch.opus_raw", tt.sampleRate, tt.channels)
 			rawOpusData := getRawOpusPackets(t, opusFilename)
 			for _, packet := range rawOpusData {
 				if err := packer.AddChunk(packet, false, -1); err != nil {
