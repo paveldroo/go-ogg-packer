@@ -57,7 +57,6 @@ func (s *AudioBufferWriter) GetResult() ([]byte, error) {
 	}
 
 	s.result = oggPages
-	saveSlicesForTests(s.allOpusPackets)
 
 	return s.result, nil
 }

@@ -7,53 +7,78 @@ import (
 	"path"
 	"reflect"
 	"testing"
-	"time"
 
 	packer "github.com/paveldroo/go-ogg-packer"
 )
 
-const (
-	baseOggFilename = "testdata/want/48k_1ch.ogg"
-	rawOpusFilename = "testdata/48k_1ch.opus_raw"
-)
-
-func TestPacker1ch48khz(t *testing.T) {
-	channelCount := 1
-	sampleRate := 48000
-	packer, err := packer.New(uint8(channelCount), uint32(sampleRate))
-	if err != nil {
-		t.Fatalf("create ogg packer: %s", err.Error())
+func TestPacker(t *testing.T) {
+	tests := []struct {
+		name       string
+		channels   int
+		sampleRate int
+	}{
+		// {
+		// 	name:       "48k 1ch",
+		// 	channels:   1,
+		// 	sampleRate: 48000,
+		// },
+		// {
+		// 	name:       "48k 2ch",
+		// 	channels:   2,
+		// 	sampleRate: 48000,
+		// },
+		{
+			name:       "8k 1ch",
+			channels:   1,
+			sampleRate: 8000,
+		},
+		// {
+		// 	name:       "8k 2ch",
+		// 	channels:   2,
+		// 	sampleRate: 8000,
+		// },
 	}
 
-	rawOpusData := getRawOpusPackets(t)
-	for _, packet := range rawOpusData {
-		if err := packer.AddChunk(packet, false, -1); err != nil {
-			t.Fatalf("send opus chunk to packer: %s", err.Error())
-		}
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			packer, err := packer.New(uint8(tt.channels), uint32(tt.sampleRate))
+			if err != nil {
+				t.Fatalf("create ogg packer: %s", err.Error())
+			}
 
-	oggData, err := packer.ReadPages()
-	if err != nil {
-		t.Fatalf("read all pages from packer: %s", err.Error())
-	}
+			opusFilename := fmt.Sprintf("testdata/%dk_%dch.opus_raw", tt.sampleRate, tt.channels)
+			rawOpusData := getRawOpusPackets(t, opusFilename)
+			for _, packet := range rawOpusData {
+				if err := packer.AddChunk(packet, false, -1); err != nil {
+					t.Fatalf("send opus chunk to packer: %s", err.Error())
+				}
+			}
 
-	fname := fmt.Sprintf("testdata/ogg_packer_result_%d.ogg", time.Now().UnixNano())
-	writeOggFile(t, fname, oggData)
+			oggData, err := packer.ReadPages()
+			if err != nil {
+				t.Fatalf("read all pages from packer: %s", err.Error())
+			}
 
-	baseData, err := os.ReadFile(baseOggFilename)
-	if err != nil {
-		t.Fatalf("open base file: %s", err.Error())
-	}
+			fname := fmt.Sprintf("testdata/%dk_%dch.ogg", tt.sampleRate, tt.channels)
+			writeOggFile(t, fname, oggData)
 
-	if !reflect.DeepEqual(baseData, oggData) {
-		t.Fatal("base data and test data are not equal")
+			refFilename := fmt.Sprintf("testdata/want/%dk_%dch.ogg", tt.sampleRate, tt.channels)
+			refData, err := os.ReadFile(refFilename)
+			if err != nil {
+				t.Fatalf("open reference file: %s", err.Error())
+			}
+
+			if !reflect.DeepEqual(refData, oggData) {
+				t.Fatal("base data and test data are not equal")
+			}
+		})
 	}
 }
 
-func getRawOpusPackets(t *testing.T) [][]byte {
+func getRawOpusPackets(t *testing.T, fname string) [][]byte {
 	t.Helper()
 
-	f, err := os.Open(rawOpusFilename)
+	f, err := os.Open(fname)
 	if err != nil {
 		t.Fatalf("read raw opus file: %s", err.Error())
 	}
@@ -66,14 +91,14 @@ func getRawOpusPackets(t *testing.T) [][]byte {
 	return audioData
 }
 
-func writeOggFile(t *testing.T, name string, data []byte) {
+func writeOggFile(t *testing.T, fname string, data []byte) {
 	t.Helper()
 	wDir, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("get current work directory: %s", err.Error())
 	}
 
-	var fPath = path.Join(wDir, name)
+	var fPath = path.Join(wDir, fname)
 	if err := os.WriteFile(fPath, data, 0666); err != nil {
 		t.Fatalf("write result file: %s", err.Error())
 	}

@@ -12,10 +12,9 @@ import (
 )
 
 const (
-	serialNo          = 99999 // const for testing similarity in active development phase. Should be `rand.New(rand.NewSource(time.Now().UTC().Unix() % 0x80000000)).Int31()` in real world.
-	initBufferSize    = 4096
-	maxFrameSize      = 5760
-	defaultSampleRate = 48000
+	serialNo       = 99999 // const for testing similarity in active development phase. Should be `rand.New(rand.NewSource(time.Now().UTC().Unix() % 0x80000000)).Int31()` in real world.
+	initBufferSize = 4096
+	maxFrameSize   = 5760
 )
 
 type Packer struct {
@@ -63,7 +62,7 @@ func (p *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
 			return fmt.Errorf("decode chunk data with opus decoder: %w", err)
 		}
 	} else {
-		numSamplesPerChannel = int(samplesCount*defaultSampleRate) / (int(p.sampleRate) * int(p.channelCount))
+		numSamplesPerChannel = int(samplesCount*int(p.sampleRate)) / (int(p.sampleRate) * int(p.channelCount))
 	}
 
 	p.granulePos += int64(numSamplesPerChannel)
@@ -83,7 +82,7 @@ func (p *Packer) ReadPages() ([]byte, error) {
 func (p *Packer) init() error {
 	p.oggEncoder = ogg.NewEncoder(serialNo, &p.buffer)
 
-	d, err := opus.NewDecoder(defaultSampleRate, int(p.channelCount))
+	d, err := opus.NewDecoder(int(p.sampleRate), int(p.channelCount))
 	if err != nil {
 		return fmt.Errorf("create opus decoder: %w", err)
 	}

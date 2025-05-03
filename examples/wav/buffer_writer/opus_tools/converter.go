@@ -32,7 +32,8 @@ func (converter *Converter) EncodeOneChunk(samplesChunk []int16) ([]byte, error)
 	if len(samplesChunk) < converter.frameSizeSamples {
 		return []byte{}, nil
 	}
-	oneOpusPacket := make([]byte, converter.config.BufferSize)
+	bufferSize := converter.frameSizeSamples * 4
+	oneOpusPacket := make([]byte, bufferSize)
 	n, err := converter.encoder.Encode(samplesChunk[:converter.frameSizeSamples], oneOpusPacket)
 	if err != nil {
 		return nil, err
