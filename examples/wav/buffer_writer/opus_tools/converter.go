@@ -1,21 +1,19 @@
 package opus_tools
 
 import (
-	"fmt"
-
 	"gopkg.in/hraban/opus.v2"
 )
 
 type Converter struct {
 	config           *Config
-	encoder          *opus.Encoder
+	encoder          *encoderWrapper
 	frameSizeSamples int
 }
 
 func NewOpusConverter(config *Config) (*Converter, error) {
-	encoder, err := opus.NewEncoder(config.SampleRate, config.NumChannels, opus.AppAudio)
+	encoder, err := newEncoderWrapper(config.SampleRate, config.NumChannels, opus.AppAudio)
 	if err != nil {
-		return nil, fmt.Errorf("create encoder: %w", err)
+		return nil, err
 	}
 
 	frameSizeMillis := config.FrameSize.Milliseconds()
@@ -34,7 +32,7 @@ func (converter *Converter) EncodeOneChunk(samplesChunk []int16) ([]byte, error)
 	}
 	bufferSize := converter.frameSizeSamples * 4
 	oneOpusPacket := make([]byte, bufferSize)
-	n, err := converter.encoder.Encode(samplesChunk[:converter.frameSizeSamples], oneOpusPacket)
+	n, err := converter.encoder.encode(samplesChunk[:converter.frameSizeSamples], oneOpusPacket)
 	if err != nil {
 		return nil, err
 	}
