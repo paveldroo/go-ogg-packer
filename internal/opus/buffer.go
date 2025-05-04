@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"os"
 
-	packer "github.com/paveldroo/go-ogg-packer"
+	"github.com/paveldroo/go-ogg-packer/internal/ogg"
 )
 
 type AudioBufferWriter struct {
 	result         []byte
 	opusConverter  *Converter
-	oggPacker      *packer.Packer
+	oggPacker      *ogg.Packer
 	lastS16Buffer  []int16
 	allOpusPackets [][]byte
 }
 
 func NewAudioBuffer(
 	opusConverter *Converter,
-	oggPacker *packer.Packer,
+	oggPacker *ogg.Packer,
 ) *AudioBufferWriter {
 	return &AudioBufferWriter{
 		opusConverter: opusConverter,

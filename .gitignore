@@ -25,6 +25,5 @@ go.work.sum
 **/.DS_Store
 
 # Audio results
-tests/testdata/*.ogg
+internal/ogg/testdata/*.ogg
 examples/wav/*.ogg
-examples/opus/*.ogg

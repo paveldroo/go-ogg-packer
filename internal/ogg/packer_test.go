@@ -1,4 +1,4 @@
-package tests
+package ogg_test
 
 import (
 	"encoding/gob"
@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	packer "github.com/paveldroo/go-ogg-packer"
+	"github.com/paveldroo/go-ogg-packer/internal/ogg"
 )
 
 func TestPacker(t *testing.T) {
@@ -43,7 +43,7 @@ func TestPacker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			baseFilename := fmt.Sprintf("%dk_%dch", tt.sampleRate, tt.channels)
 
-			packer, err := packer.New(uint8(tt.channels), uint32(tt.sampleRate))
+			packer, err := ogg.New(uint8(tt.channels), uint32(tt.sampleRate))
 			if err != nil {
 				t.Fatalf("create ogg packer: %s", err.Error())
 			}

@@ -9,7 +9,7 @@ import (
 	"path"
 	"time"
 
-	packer "github.com/paveldroo/go-ogg-packer"
+	"github.com/paveldroo/go-ogg-packer/internal/ogg"
 	"github.com/paveldroo/go-ogg-packer/internal/opus"
 )
 
@@ -22,7 +22,7 @@ func main() {
 		log.Fatalf("create opus converter: %s", err.Error())
 	}
 
-	packer, err := packer.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate))
+	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate))
 	if err != nil {
 		log.Fatalf("create ogg packer: %s", err.Error())
 	}
