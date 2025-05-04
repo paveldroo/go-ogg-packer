@@ -41,12 +41,14 @@ func TestPacker(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			baseFilename := fmt.Sprintf("%dk_%dch", tt.sampleRate, tt.channels)
+
 			packer, err := packer.New(uint8(tt.channels), uint32(tt.sampleRate))
 			if err != nil {
 				t.Fatalf("create ogg packer: %s", err.Error())
 			}
 
-			opusFilename := fmt.Sprintf("testdata/opus_raw/%dk_%dch.opus_raw", tt.sampleRate, tt.channels)
+			opusFilename := fmt.Sprintf("testdata/opus_raw/%s.opus_raw", baseFilename)
 			rawOpusData := getRawOpusPackets(t, opusFilename)
 			for _, packet := range rawOpusData {
 				if err := packer.AddChunk(packet, false, -1); err != nil {
@@ -59,10 +61,10 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("read all pages from packer: %s", err.Error())
 			}
 
-			fname := fmt.Sprintf("testdata/%dk_%dch.ogg", tt.sampleRate, tt.channels)
+			fname := fmt.Sprintf("testdata/%s.ogg", baseFilename)
 			writeOggFile(t, fname, oggData)
 
-			refFilename := fmt.Sprintf("testdata/want/%dk_%dch.ogg", tt.sampleRate, tt.channels)
+			refFilename := fmt.Sprintf("testdata/want/%s.ogg", baseFilename)
 			refData, err := os.ReadFile(refFilename)
 			if err != nil {
 				t.Fatalf("open reference file: %s", err.Error())
@@ -99,35 +101,6 @@ func writeOggFile(t *testing.T, fname string, data []byte) {
 	}
 
 	var fPath = path.Join(wDir, fname)
-	if err := os.WriteFile(fPath, data, 0666); err != nil {
-		t.Fatalf("write result file: %s", err.Error())
-	}
-}
-
-func getRawOpusPackets(t *testing.T) [][]byte {
-	t.Helper()
-
-	f, err := os.Open(rawOpusFilename)
-	if err != nil {
-		t.Fatalf("read raw opus file: %s", err.Error())
-	}
-	decoder := gob.NewDecoder(f)
-	var audioData [][]byte
-	if err := decoder.Decode(&audioData); err != nil {
-		t.Fatalf("decode data from file: %s", err.Error())
-	}
-
-	return audioData
-}
-
-func writeOggFile(t *testing.T, name string, data []byte) {
-	t.Helper()
-	wDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("get current work directory: %s", err.Error())
-	}
-
-	var fPath = path.Join(wDir, name)
 	if err := os.WriteFile(fPath, data, 0666); err != nil {
 		t.Fatalf("write result file: %s", err.Error())
 	}
