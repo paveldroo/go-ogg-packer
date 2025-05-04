@@ -25,6 +25,8 @@ Check out [examples](examples) for demonstration of using Go Ogg Packer with Opu
 - [x] Remove C ogg lib dependency
 - [x] Remove direct C opus lib dependency
 - [x] Add ogg encoder to codebase, eliminate unmaintained dependency
+- [x] Use only opus raw data in tests
+- [x] Add examples for Opus and Wav formats 
 - [ ] Check lib layout with peers
 - [ ] Production-ready release 1.0
 

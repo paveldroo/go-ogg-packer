@@ -103,3 +103,32 @@ func writeOggFile(t *testing.T, fname string, data []byte) {
 		t.Fatalf("write result file: %s", err.Error())
 	}
 }
+
+func getRawOpusPackets(t *testing.T) [][]byte {
+	t.Helper()
+
+	f, err := os.Open(rawOpusFilename)
+	if err != nil {
+		t.Fatalf("read raw opus file: %s", err.Error())
+	}
+	decoder := gob.NewDecoder(f)
+	var audioData [][]byte
+	if err := decoder.Decode(&audioData); err != nil {
+		t.Fatalf("decode data from file: %s", err.Error())
+	}
+
+	return audioData
+}
+
+func writeOggFile(t *testing.T, name string, data []byte) {
+	t.Helper()
+	wDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("get current work directory: %s", err.Error())
+	}
+
+	var fPath = path.Join(wDir, name)
+	if err := os.WriteFile(fPath, data, 0666); err != nil {
+		t.Fatalf("write result file: %s", err.Error())
+	}
+}
