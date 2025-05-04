@@ -19,7 +19,7 @@ func NewOpusConverter(config *Config) (*Converter, error) {
 	}
 
 	frameSizeMillis := config.FrameSize.Milliseconds()
-	frameSizeSamples := float32(int64(config.NumChannels*config.SampleRate)*frameSizeMillis) / 1000 //nolint:mnd // millis -> seconds
+	frameSizeSamples := float32(int64(config.NumChannels*config.SampleRate)*frameSizeMillis) / 1000
 
 	return &Converter{
 		encoder:          encoder,

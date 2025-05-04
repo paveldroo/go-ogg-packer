@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"runtime"
 
-	ogg "github.com/paveldroo/go-ogg-packer/internal"
+	ogg "github.com/paveldroo/go-ogg-packer/internal/ogg"
 	opus "gopkg.in/hraban/opus.v2"
 )
 
