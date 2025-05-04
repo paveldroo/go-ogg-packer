@@ -10,15 +10,14 @@ import (
 	"time"
 
 	packer "github.com/paveldroo/go-ogg-packer"
-	writer "github.com/paveldroo/go-ogg-packer/examples/wav/buffer_writer"
-	"github.com/paveldroo/go-ogg-packer/examples/wav/buffer_writer/opus_tools"
+	"github.com/paveldroo/go-ogg-packer/internal/opus"
 )
 
 const wavFilePath = "48k_1ch.wav"
 
 func main() {
-	cfg := opus_tools.NewDefaultConfig()
-	converter, err := opus_tools.NewOpusConverter(cfg)
+	cfg := opus.NewDefaultConfig()
+	converter, err := opus.NewOpusConverter(cfg)
 	if err != nil {
 		log.Fatalf("create opus converter: %s", err.Error())
 	}
@@ -29,7 +28,7 @@ func main() {
 	}
 
 	s16 := s16FromWav()
-	audioBuffer := writer.NewAudioBuffer(converter, packer)
+	audioBuffer := opus.NewAudioBuffer(converter, packer)
 
 	for i := 0; i < len(s16); i++ {
 		end := i + 2048

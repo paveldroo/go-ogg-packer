@@ -1,4 +1,4 @@
-package opus_tools
+package opus
 
 import "time"
 

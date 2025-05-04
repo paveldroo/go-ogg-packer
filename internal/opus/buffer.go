@@ -1,4 +1,4 @@
-package writer
+package opus
 
 import (
 	"encoding/gob"
@@ -6,19 +6,18 @@ import (
 	"os"
 
 	packer "github.com/paveldroo/go-ogg-packer"
-	"github.com/paveldroo/go-ogg-packer/examples/wav/buffer_writer/opus_tools"
 )
 
 type AudioBufferWriter struct {
 	result         []byte
-	opusConverter  *opus_tools.Converter
+	opusConverter  *Converter
 	oggPacker      *packer.Packer
 	lastS16Buffer  []int16
 	allOpusPackets [][]byte
 }
 
 func NewAudioBuffer(
-	opusConverter *opus_tools.Converter,
+	opusConverter *Converter,
 	oggPacker *packer.Packer,
 ) *AudioBufferWriter {
 	return &AudioBufferWriter{
