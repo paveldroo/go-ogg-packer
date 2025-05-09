@@ -31,7 +31,7 @@ Check out [examples](examples) for demonstration of using Go Ogg Packer with Wav
 - [x] Use only opus raw data in tests
 - [x] Add examples for Opus and Wav formats
 - [x] Add direct PCM to Ogg API with Opus converting under the hood
-- [ ] Add opus encoder tests
+- [x] Add opus encoder tests
 - [ ] Check lib layout with peers
 - [ ] Production-ready release 1.0
 
