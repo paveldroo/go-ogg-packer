@@ -8,17 +8,17 @@ import (
 )
 
 type Packer struct {
-	result        []byte
-	opusConverter *opus.Encoder
-	oggPacker     *ogg.Packer
-	pcmBuffer     []int16
+	result      []byte
+	opusEncoder *opus.Encoder
+	oggPacker   *ogg.Packer
+	pcmBuffer   []int16
 }
 
 func New() (*Packer, error) {
 	cfg := opus.NewDefaultConfig()
-	converter, err := opus.NewEncoder(cfg)
+	encoder, err := opus.NewEncoder(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("create opus converter: %s", err)
+		return nil, fmt.Errorf("create opus encoder: %s", err)
 	}
 
 	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate))
@@ -27,14 +27,14 @@ func New() (*Packer, error) {
 	}
 
 	return &Packer{
-		opusConverter: converter,
-		oggPacker:     packer,
+		opusEncoder: encoder,
+		oggPacker:   packer,
 	}, nil
 }
 
 func (s *Packer) SendPCMChunk(chunk []int16) error {
 	s.pcmBuffer = append(s.pcmBuffer, chunk...)
-	currentOpusPackets, pos, err := s.opusConverter.Encode(s.pcmBuffer)
+	currentOpusPackets, pos, err := s.opusEncoder.Encode(s.pcmBuffer)
 	if err != nil {
 		return fmt.Errorf("encode: %w", err)
 	}
@@ -74,7 +74,7 @@ func (s *Packer) flushPCMBuffer() error {
 		return nil
 	}
 
-	opusPackets, err := s.opusConverter.EncodeWithPadding(s.pcmBuffer)
+	opusPackets, err := s.opusEncoder.EncodeWithPadding(s.pcmBuffer)
 	if err != nil {
 		return fmt.Errorf("encode: %w", err)
 	}

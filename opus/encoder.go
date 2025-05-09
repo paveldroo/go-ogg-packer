@@ -51,11 +51,11 @@ func NewEncoder(config *Config) (*Encoder, error) {
 	}, nil
 }
 
-func (converter *Encoder) Encode(samples []int16) ([][]byte, int, error) {
+func (e *Encoder) Encode(samples []int16) ([][]byte, int, error) {
 	var encoded [][]byte
 	pos := 0
-	for ; pos+converter.frameSizeSamples <= len(samples); pos += converter.frameSizeSamples {
-		oneOpusPacket, err := converter.encodeOneChunk(samples[pos : pos+converter.frameSizeSamples])
+	for ; pos+e.frameSizeSamples <= len(samples); pos += e.frameSizeSamples {
+		oneOpusPacket, err := e.encodeOneChunk(samples[pos : pos+e.frameSizeSamples])
 		if err != nil {
 			return [][]byte{}, 0, err
 		}
@@ -64,17 +64,17 @@ func (converter *Encoder) Encode(samples []int16) ([][]byte, int, error) {
 	return encoded, pos, nil
 }
 
-func (converter *Encoder) EncodeWithPadding(samples []int16) ([][]byte, error) {
-	encoded, pos, err := converter.Encode(samples)
+func (e *Encoder) EncodeWithPadding(samples []int16) ([][]byte, error) {
+	encoded, pos, err := e.Encode(samples)
 	if err != nil {
 		return nil, err
 	}
 	if len(samples) > pos {
-		if len(samples)-pos > converter.frameSizeSamples {
+		if len(samples)-pos > e.frameSizeSamples {
 			return nil, ErrTooLargeLastPacket
 		}
-		samples = append(samples, make([]int16, converter.frameSizeSamples-(len(samples)-pos))...)
-		oneOpusPacket, err := converter.encodeOneChunk(samples[pos : pos+converter.frameSizeSamples])
+		samples = append(samples, make([]int16, e.frameSizeSamples-(len(samples)-pos))...)
+		oneOpusPacket, err := e.encodeOneChunk(samples[pos : pos+e.frameSizeSamples])
 		if err != nil {
 			return nil, err
 		}
@@ -83,13 +83,13 @@ func (converter *Encoder) EncodeWithPadding(samples []int16) ([][]byte, error) {
 	return encoded, nil
 }
 
-func (converter *Encoder) encodeOneChunk(samplesChunk []int16) ([]byte, error) {
-	if len(samplesChunk) < converter.frameSizeSamples {
+func (e *Encoder) encodeOneChunk(samplesChunk []int16) ([]byte, error) {
+	if len(samplesChunk) < e.frameSizeSamples {
 		return []byte{}, nil
 	}
-	bufferSize := converter.frameSizeSamples * 4
+	bufferSize := e.frameSizeSamples * 4
 	oneOpusPacket := make([]byte, bufferSize)
-	n, err := converter.encoder.encode(samplesChunk[:converter.frameSizeSamples], oneOpusPacket)
+	n, err := e.encoder.encode(samplesChunk[:e.frameSizeSamples], oneOpusPacket)
 	if err != nil {
 		return nil, err
 	}
