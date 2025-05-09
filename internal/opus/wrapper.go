@@ -7,9 +7,7 @@ import (
 	"gopkg.in/hraban/opus.v2"
 )
 
-// Opus encoder and decoder can produce undefined behavior when used concurrently.
-// These wrappers are defined to avoid it.
-
+// newEncoderWrapper creates concurrent safe Opus encoder
 func newEncoderWrapper(sampleRate, channels int, application opus.Application) (*encoderWrapper, error) {
 	encoder, err := opus.NewEncoder(sampleRate, channels, application)
 	if err != nil {

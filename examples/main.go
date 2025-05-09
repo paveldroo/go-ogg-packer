@@ -9,50 +9,41 @@ import (
 	"path"
 	"time"
 
-	"github.com/paveldroo/go-ogg-packer/internal/ogg"
-	"github.com/paveldroo/go-ogg-packer/internal/opus"
+	packer "github.com/paveldroo/go-ogg-packer"
 )
 
 const wavFilePath = "48k_1ch.wav"
 
 func main() {
-	cfg := opus.NewDefaultConfig()
-	converter, err := opus.NewOpusConverter(cfg)
+	pcmData := pcmFromWav()
+	packer, err := packer.New()
 	if err != nil {
-		log.Fatalf("create opus converter: %s", err.Error())
+		log.Fatalf("create new packer: %s", err.Error())
 	}
 
-	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate))
-	if err != nil {
-		log.Fatalf("create ogg packer: %s", err.Error())
-	}
-
-	s16 := s16FromWav()
-	audioBuffer := opus.NewAudioBuffer(converter, packer)
-
-	for i := 0; i < len(s16); i++ {
+	for i := 0; i < len(pcmData); i++ {
 		end := i + 2048
-		if end > len(s16) {
-			end = len(s16)
+		if end > len(pcmData) {
+			end = len(pcmData)
 		}
-		if err := audioBuffer.SendS16Chunk(s16[i:end]); err != nil {
+		if err := packer.SendPCMChunk(pcmData[i:end]); err != nil {
 			log.Fatalf("send s16 chunk: %s", err.Error())
 		}
 		i = end
 	}
 
-	audioContent, err := audioBuffer.GetResult()
+	audioContent, err := packer.GetResult()
 	if err != nil {
-		log.Fatalf("get result from audio buffer: %s", err.Error())
+		log.Fatalf("get result from packer: %s", err.Error())
 	}
 
-	fname := fmt.Sprintf("ogg_packer_result_%d.ogg", time.Now().UnixNano())
+	fname := fmt.Sprintf("packer_result_%d.ogg", time.Now().UnixNano())
 	if err := writeOggFile(fname, audioContent); err != nil {
 		log.Fatalf("write ogg file: %s", err.Error())
 	}
 }
 
-func s16FromWav() []int16 {
+func pcmFromWav() []int16 {
 	d, err := os.ReadFile(wavFilePath)
 	if err != nil {
 		log.Fatalf("open wav file: %s", err.Error())

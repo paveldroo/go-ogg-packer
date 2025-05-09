@@ -26,4 +26,4 @@ go.work.sum
 
 # Audio results
 internal/ogg/testdata/*.ogg
-examples/wav/*.ogg
+examples/*.ogg
