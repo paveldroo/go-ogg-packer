@@ -11,7 +11,7 @@
 </p>
 <br>
 
-### Sample rates and channel support
+### Sample rates and channels support
 - Only **48000 Hz** sample rate and **1 channel** (mono) supported at the moment. Feel free to add a PR with different audio settings.
 
 ### RFCs
