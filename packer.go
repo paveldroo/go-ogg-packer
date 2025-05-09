@@ -3,8 +3,8 @@ package packer
 import (
 	"fmt"
 
-	"github.com/paveldroo/go-ogg-packer/internal/ogg"
-	"github.com/paveldroo/go-ogg-packer/internal/opus"
+	"github.com/paveldroo/go-ogg-packer/ogg"
+	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
 type Packer struct {

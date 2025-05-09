@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/paveldroo/go-ogg-packer/internal/ogg"
+	"github.com/paveldroo/go-ogg-packer/ogg"
 )
 
 const fileBasePath = "48k_1ch"
