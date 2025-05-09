@@ -21,8 +21,8 @@ type Config struct {
 	FrameSize   time.Duration
 }
 
-func NewDefaultConfig() *Config {
-	return &Config{
+func NewDefaultConfig() Config {
+	return Config{
 		SampleRate:  SampleRate,
 		NumChannels: numChannels,
 		FrameSize:   frameSize,
@@ -30,24 +30,21 @@ func NewDefaultConfig() *Config {
 }
 
 type Encoder struct {
-	config           *Config
+	config           Config
 	encoder          *encoderWrapper
 	frameSizeSamples int
 }
 
-func NewEncoder(config *Config) (*Encoder, error) {
+func NewEncoder(config Config) (*Encoder, error) {
 	encoder, err := newEncoderWrapper(config.SampleRate, config.NumChannels, opus.AppAudio)
 	if err != nil {
 		return nil, err
 	}
 
-	frameSizeMillis := config.FrameSize.Milliseconds()
-	frameSizeSamples := float32(int64(config.NumChannels*config.SampleRate)*frameSizeMillis) / 1000
-
 	return &Encoder{
 		encoder:          encoder,
 		config:           config,
-		frameSizeSamples: int(frameSizeSamples),
+		frameSizeSamples: FrameSizeSamples(config),
 	}, nil
 }
 
@@ -95,4 +92,10 @@ func (e *Encoder) encodeOneChunk(samplesChunk []int16) ([]byte, error) {
 	}
 	oneOpusPacket = oneOpusPacket[:n]
 	return oneOpusPacket, nil
+}
+
+func FrameSizeSamples(cfg Config) int {
+	frameSizeMillis := cfg.FrameSize.Milliseconds()
+	frameSizeSamples := float32(int64(cfg.NumChannels*cfg.SampleRate)*frameSizeMillis) / 1000
+	return int(frameSizeSamples)
 }
