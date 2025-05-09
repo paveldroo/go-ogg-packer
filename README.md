@@ -14,7 +14,7 @@
 ### What is PCM
 - [Pulse-code modulation](https://en.wikipedia.org/wiki/Pulse-code_modulation) - universal format to transfer audio data
 - You should use appropriate library to convert audio data from your container (WAV, MP3, etc.) to PCM data before using Go Ogg Packer
-- Your PCM should be in sample rate and channel number supported by this library
+- Your PCM sample rate and channels count should be supported by this library
 
 ### Sample rates and channels support
 - Only **48000 Hz** sample rate and **1 channel** (mono) supported at the moment. Feel free to add a PR with different audio settings.
