@@ -22,6 +22,22 @@
 ### RFCs
 - **RFC 6716**: [The Ogg Encapsulation Format Version 0](https://www.ietf.org/rfc/rfc3533.txt)
 
+### Benchmarks 
+```
+          │ c_ogg.txt  │        native_ogg.txt        │
+          │   sec/op   │   sec/op    vs base          │
+Packer-14   2.027 ± 2%   2.024 ± 3%  ~ (p=0.971 n=10)
+
+          │  c_ogg.txt   │            native_ogg.txt            │
+          │     B/op     │     B/op      vs base                │
+Packer-14   282.2Mi ± 0%   355.8Mi ± 0%  +26.09% (p=0.000 n=10)
+
+          │  c_ogg.txt  │           native_ogg.txt           │
+          │  allocs/op  │  allocs/op   vs base               │
+Packer-14   25.30M ± 0%   25.32M ± 0%  +0.06% (p=0.000 n=10)
+```
+Although the native Go implementation allocates 26% more space, the difference in overall execution speed is statistically insignificant.
+
 ### Running
 Check out [examples](examples) for demonstration of using Go Ogg Packer with Wav files.
 
@@ -37,6 +53,7 @@ Check out [examples](examples) for demonstration of using Go Ogg Packer with Wav
 - [x] Add examples for Opus and Wav formats
 - [x] Add direct PCM to Ogg API with Opus converting under the hood
 - [x] Add opus encoder tests
+- [x] Add benchmarks
 - [ ] Check lib layout with peers
 - [ ] Production-ready release 1.0
 
