@@ -9,14 +9,14 @@ import (
 	"path"
 	"time"
 
-	packer "github.com/paveldroo/go-ogg-packer"
+	oggPacker "github.com/paveldroo/go-ogg-packer"
 )
 
-const wavFilePath = "48k_1ch.wav"
+const pcmFilePath = "48k_1ch.pcm"
 
 func main() {
 	pcmData := pcmFromWav()
-	packer, err := packer.New()
+	packer, err := oggPacker.New()
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}
@@ -44,7 +44,7 @@ func main() {
 }
 
 func pcmFromWav() []int16 {
-	d, err := os.ReadFile(wavFilePath)
+	d, err := os.ReadFile(pcmFilePath)
 	if err != nil {
 		log.Fatalf("open wav file: %s", err.Error())
 	}
@@ -75,6 +75,6 @@ func writeOggFile(name string, data []byte) error {
 	if err := os.WriteFile(fPath, data, 0666); err != nil {
 		return fmt.Errorf("write result file: %w", err)
 	}
-
+	log.Println("result:", fPath)
 	return nil
 }

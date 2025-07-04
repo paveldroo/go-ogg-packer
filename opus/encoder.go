@@ -15,6 +15,12 @@ const (
 	frameSize   = time.Duration(60) * time.Millisecond
 )
 
+var (
+	SupportedFrameSize   = []float64{2.5, 5, 10, 20, 40, 60}
+	SupportedSampleRate  = []int{8000, 12000, 16000, 24000, 48000}
+	SupportedNumChannels = []int{1, 2}
+)
+
 type Config struct {
 	SampleRate  int
 	NumChannels int

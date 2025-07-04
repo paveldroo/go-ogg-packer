@@ -17,7 +17,9 @@
 - Your PCM sample rate and channels count should be supported by this library
 
 ### Sample rates and channels support
-- Only **48000 Hz** sample rate and **1 channel** (mono) supported at the moment. Feel free to add a PR with different audio settings.
+- Support custom config for opus encoder 
+- 8000 Hz, 12000 Hz, 16000 Hz,24000 Hz, 48000 Hz sample rate are supported.
+- 1 channel (mono), 2 channel (stereo) channels are support.
 
 ### RFCs
 - **RFC 6716**: [The Ogg Encapsulation Format Version 0](https://www.ietf.org/rfc/rfc3533.txt)

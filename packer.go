@@ -2,6 +2,8 @@ package packer
 
 import (
 	"fmt"
+	"slices"
+	"time"
 
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
@@ -16,6 +18,26 @@ type Packer struct {
 
 func New() (*Packer, error) {
 	cfg := opus.NewDefaultConfig()
+	return newPacker(cfg)
+}
+
+func NewWithConfig(sampleRate int, numChannels int, frameSize time.Duration) (*Packer, error) {
+	if !slices.Contains(opus.SupportedSampleRate, sampleRate) {
+		return nil, fmt.Errorf("sample rate must be one of the supported sample rates (8000, 12000, 16000, 24000, 48000)")
+	}
+	if !slices.Contains(opus.SupportedNumChannels, numChannels) {
+		return nil, fmt.Errorf("num channels must be one of the supported num channels (1,2)")
+	}
+	if !slices.Contains(opus.SupportedFrameSize, float64(frameSize)/float64(time.Millisecond)) {
+		return nil, fmt.Errorf("framesize must be (2.5, 5, 10, 20, 40 or 60) ms")
+	}
+	return newPacker(opus.Config{
+		SampleRate:  sampleRate,
+		NumChannels: numChannels,
+		FrameSize:   frameSize,
+	})
+}
+func newPacker(cfg opus.Config) (*Packer, error) {
 	encoder, err := opus.NewEncoder(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create opus encoder: %s", err)
