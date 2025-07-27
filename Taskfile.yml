@@ -2,6 +2,9 @@ version: "3"
 
 dotenv: ['.env']
 
+env:
+  BASE_IMAGE: go-ogg-packer:base
+
 tasks:
   install-mac-deps:
     desc: Install external dependencies for macOS
@@ -27,3 +30,13 @@ tasks:
     desc: Run tests
     cmds:
       - go test -v -shuffle=on -cover -race ./...
+
+  docker-build:
+    desc: Build docker image
+    cmds:
+      - docker build --platform=linux/amd64 -t {{.BASE_IMAGE}} -f Dockerfile .
+
+  docker-test:
+    desc: Run tests in docker
+    cmds:
+      - docker run {{.BASE_IMAGE}} task test
