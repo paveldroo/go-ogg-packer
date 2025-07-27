@@ -39,4 +39,5 @@ tasks:
   docker-test:
     desc: Run tests in docker
     cmds:
+      - task docker-build
       - docker run {{.BASE_IMAGE}} task test

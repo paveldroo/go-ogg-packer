@@ -75,7 +75,7 @@ func TestPacker(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(refData, audioData) {
-				t.Fatal("source data and want data should NOT be equal")
+				t.Fatal("source data and want data should be equal")
 			}
 		})
 	}
