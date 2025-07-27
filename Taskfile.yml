@@ -41,3 +41,9 @@ tasks:
     cmds:
       - task docker-build
       - docker run {{.BASE_IMAGE}} task test
+
+  docker-generate-ogg:
+    desc: Generate ogg reference file for tests on Linux
+    cmds:
+      - task docker-build
+      - docker run -v "{{.PWD}}/examples/:/app/examples/" {{.BASE_IMAGE}} go run examples/main.go
