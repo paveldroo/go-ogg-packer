@@ -18,13 +18,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install APT packages
-      run: sudo apt-get update \
-            && sudo apt-get install -y --no-install-recommends \
-            libopus-dev \
-            libopusfile-dev \
-            golang-go \
-            git \
-            ca-certificates
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends libopus-dev libopusfile-dev golang-go git ca-certificates
 
     - name: Test
       run: go test -v ./...
