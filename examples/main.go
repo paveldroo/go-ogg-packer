@@ -12,7 +12,7 @@ import (
 	packer "github.com/paveldroo/go-ogg-packer"
 )
 
-const wavFilePath = "48k_1ch.wav"
+const wavFilePath = "examples/48k_1ch.wav"
 
 func main() {
 	pcmData := pcmFromWav()
@@ -37,7 +37,7 @@ func main() {
 		log.Fatalf("get result from packer: %s", err.Error())
 	}
 
-	fname := fmt.Sprintf("packer_result_%d.ogg", time.Now().UnixNano())
+	fname := fmt.Sprintf("examples/packer_result_%d.ogg", time.Now().UnixNano())
 	if err := writeOggFile(fname, audioContent); err != nil {
 		log.Fatalf("write ogg file: %s", err.Error())
 	}

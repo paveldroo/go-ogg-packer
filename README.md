@@ -11,6 +11,17 @@
 </p>
 <br>
 
+### Dependencies
+You need to install the following system dependencies:
+- `libopus`
+- `libopusfile`
+
+For example, on Linux you can install them using:
+```bash
+apt-get install libopus-dev libopusfile-dev
+```
+For the most up-to-date list of dependencies, feel free to check the `Dockerfile`.
+
 ### What is PCM
 - [Pulse-code modulation](https://en.wikipedia.org/wiki/Pulse-code_modulation) - universal format to transfer audio data
 - You should use appropriate library to convert audio data from your container (WAV, MP3, etc.) to PCM data before using Go Ogg Packer
@@ -22,7 +33,7 @@
 ### RFCs
 - **RFC 6716**: [The Ogg Encapsulation Format Version 0](https://www.ietf.org/rfc/rfc3533.txt)
 
-### Benchmarks 
+### Benchmarks
 ```
           │ c_ogg.txt  │        native_ogg.txt        │
           │   sec/op   │   sec/op    vs base          │
@@ -40,22 +51,6 @@ Although the native Go implementation allocates 26% more space, the difference i
 
 ### Running
 Check out [examples](examples) for demonstration of using Go Ogg Packer with Wav files.
-
-### Roadmap
-- [x] Use AudioBufferWriter wrapper for CGo ogg_packer to get green tests before implementing native Go code
-- [x] Dirty native Go ogg packer implementation + comparison auto tests
-- [x] Add better error handling, split `packer` package to several files/packages
-- [x] Check linters
-- [x] Remove C ogg lib dependency
-- [x] Remove direct C opus lib dependency
-- [x] Add ogg encoder to codebase, eliminate unmaintained dependency
-- [x] Use only opus raw data in tests
-- [x] Add examples for Opus and Wav formats
-- [x] Add direct PCM to Ogg API with Opus converting under the hood
-- [x] Add opus encoder tests
-- [x] Add benchmarks
-- [ ] Check lib layout with peers
-- [ ] Production-ready release 1.0
 
 ### License
 MIT License - see [LICENSE](LICENSE) for full text
