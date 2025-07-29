@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container: 
-      image: docker.io/paveldroo/go-ogg-packer:base
+      image: paveldroo/go-ogg-packer:29.07
 
     steps:
     # - name: Checkout code
@@ -29,8 +29,8 @@ jobs:
     # - name: Task Test
     #   run: task docker-test
 
-    # - name: Task Test
-    #   run: cd /app && task test
+    - name: Task Test
+      run: cd /app && task test
 
-    - name: Test
-      run: cd /app && go test -v ./...
+    # - name: Test
+    #   run: cd /app && go test -v ./...
