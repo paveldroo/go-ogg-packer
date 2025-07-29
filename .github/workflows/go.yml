@@ -15,8 +15,8 @@ jobs:
       image: paveldroo/go-ogg-packer:base
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    # - name: Checkout code
+    #   uses: actions/checkout@v4
 
     # - name: Install APT packages
     #   run: |
