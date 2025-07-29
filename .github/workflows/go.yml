@@ -12,22 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     container: 
-      image: golang:1.20
+      image: paveldroo/go-ogg-packer:base
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install APT packages
-      run: |
-        apt-get update
-        apt-get install -y --no-install-recommends libopus-dev=1.3.1-3 libopusfile-dev=0.12-4
+    # - name: Install APT packages
+    #   run: |
+    #     apt-get update
+    #     apt-get install -y --no-install-recommends libopus-dev=1.3.1-3 libopusfile-dev=0.12-4
 
-    - name: Install Taskfile
-      run: go install github.com/go-task/task/v3/cmd/task@v3.9.1
+    # - name: Install Taskfile
+    #   run: go install github.com/go-task/task/v3/cmd/task@v3.9.1
+
+    # - name: Task Test
+    #   run: task docker-test
 
     - name: Task Test
-      run: task docker-test
+      run: task test
 
     # - name: Test
     #   run: go test -v ./...
