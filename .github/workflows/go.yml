@@ -30,7 +30,7 @@ jobs:
     #   run: task docker-test
 
     - name: Task Test
-      run: task test
+      run: cd /app && task test
 
     # - name: Test
     #   run: go test -v ./...
