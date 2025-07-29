@@ -22,7 +22,7 @@ jobs:
     - name: Install APT packages
       run: |
         apt-get update
-        apt-get install -y --no-install-recommends libopus-dev=1.4-1build1 libopusfile-dev=0.12-4build3
+        apt-get install -y --no-install-recommends libopus-dev libopusfile-dev
 
     - name: Test
       run: go test -v ./...
