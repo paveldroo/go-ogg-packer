@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container: 
-      image: paveldroo/go-ogg-packer:base
+      image: docker.io/paveldroo/go-ogg-packer:base
 
     steps:
     # - name: Checkout code
