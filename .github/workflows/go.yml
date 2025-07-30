@@ -34,7 +34,7 @@ jobs:
 
   #   # - name: Test
   #   #   run: cd /app && go test -v ./...
-  push_container:
+  test:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -54,6 +54,4 @@ jobs:
           apt-get install -y docker.io
 
       - name: Test Docker
-        run: |
-          docker version
-          docker info
+        run: docker run paveldroo/go-ogg-packer:base go test -v -shuffle=on -cover -race ./...
