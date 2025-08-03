@@ -52,5 +52,19 @@ Although the native Go implementation allocates 26% more space, the difference i
 ### Running
 Check out [examples](examples) for demonstration of using Go Ogg Packer with Wav files.
 
+### Contributing
+All project commands are managed using **Taskfile**, not `Makefile`.
+For more information, see: [Taskfile Documentation](https://taskfile.dev/)
+
+Due to inconsistencies in audio decoding across different platforms and architectures, it's recommended to run tests inside a Docker container to ensure consistent behavior.
+```bash
+task docker-test
+```
+
+If you need to generate new reference files for the tests, use the following command:
+```bash
+task docker-generate-ref
+```
+
 ### License
 MIT License - see [LICENSE](LICENSE) for full text
