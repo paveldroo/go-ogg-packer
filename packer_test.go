@@ -8,8 +8,10 @@ import (
 	"log"
 	"math"
 	"os"
-	"os/exec"
 	"testing"
+
+	extopus "gopkg.in/hraban/opus.v2"
+	extogg "mccoy.space/g/ogg"
 
 	"github.com/google/go-cmp/cmp"
 	packer "github.com/paveldroo/go-ogg-packer"
@@ -31,14 +33,14 @@ func TestPacker(t *testing.T) {
 	}{
 		{
 			name:        "48k 1ch",
-			sourceFname: fmt.Sprintf("testdata/%s.wav", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.wav", fileBasePath),
+			sourceFname: fmt.Sprintf("testdata/%s.pcm", fileBasePath),
+			refFname:    fmt.Sprintf("testdata/want/%s.pcm", fileBasePath),
 			wantErr:     false,
 		},
 		{
 			name:        "48k 1ch want error",
-			sourceFname: fmt.Sprintf("testdata/%s.wav", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.wav", fileBasePath),
+			sourceFname: fmt.Sprintf("testdata/%s.pcm", fileBasePath),
+			refFname:    fmt.Sprintf("testdata/want/%s.pcm", fileBasePath),
 			wantErr:     true,
 			errByte:     1,
 		},
@@ -71,14 +73,14 @@ func TestPacker(t *testing.T) {
 
 			if tt.wantErr {
 				pcm = append(pcm, tt.errByte)
-				if diff := cmp.Diff(refData[headersCount:], pcm, TolerantByteDiff(2)); diff == "" {
+				if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff == "" {
 					t.Fatal("source data and want data should NOT be equal")
 				}
 				return
 			}
 
-			if diff := cmp.Diff(refData[headersCount:], pcm, TolerantByteDiff(2)); diff != "" {
-				t.Fatal("source data and want data should be equal with acceptable tolerance")
+			if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff != "" {
+				t.Fatal("source data and want data should be equal with acceptable tolerance", diff)
 			}
 		})
 	}
@@ -111,43 +113,33 @@ func pcmData(t *testing.T, fn string) []int16 {
 func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
 	t.Helper()
 
-	cmd := exec.Command("ffmpeg",
-		"-i", "pipe:0",
-		"-f", "s16le",
-		"-ar", fmt.Sprint(opus.SampleRate),
-		"-ac", fmt.Sprint(opus.NumChannels),
-		"pipe:1",
-	)
+	b := bytes.NewBuffer(oggData)
+	oggDecoder := extogg.NewDecoder(b)
 
-	stdin, _ := cmd.StdinPipe()
-	stdout, _ := cmd.StdoutPipe()
-
-	_ = cmd.Start()
-
-	go func() {
-		defer stdin.Close()
-		_, _ = stdin.Write(oggData)
-	}()
-
-	var pcmData bytes.Buffer
-	_, err := io.Copy(&pcmData, stdout)
+	opusDecoder, err := extopus.NewDecoder(opus.SampleRate, opus.NumChannels)
 	if err != nil {
-		t.Fatalf("copy pcm data from stdout: %s", err.Error())
+		t.Fatalf("create opus decoder: %s", err.Error())
 	}
 
-	err = cmd.Wait()
-	if err != nil {
-		t.Fatalf("wait for copying from stdout: %s", err.Error())
+	pcmBuffer := make([]int16, opus.FrameSize*opus.SampleRate*opus.NumChannels/1000)
+
+	var pcm []int16
+	for {
+		page, err := oggDecoder.Decode()
+		if err != nil {
+			break
+		}
+
+		for _, packet := range page.Packets {
+			n, err := opusDecoder.Decode(packet, pcmBuffer)
+			if err != nil {
+				continue // some errors are acceptable during packet decoding
+			}
+			pcm = append(pcm, pcmBuffer[:n]...)
+		}
 	}
 
-	pcmSamples := make([]int16, len(pcmData.Bytes())/2)
-	buf := bytes.NewBuffer(pcmData.Bytes())
-	err = binary.Read(buf, binary.LittleEndian, &pcmSamples)
-	if err != nil {
-		t.Fatalf("read pcm error: %s", err.Error())
-	}
-
-	return pcmSamples
+	return pcm
 }
 
 // TolerantByteDiff returns a cmp.Option that allows a small tolerance when comparing []byte.
