@@ -13,6 +13,7 @@ const (
 	FrameSize   = 60
 	SampleRate  = 48000
 	NumChannels = 1
+	NumNumNum   = 2
 )
 
 type Config struct {
