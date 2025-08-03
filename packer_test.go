@@ -23,6 +23,8 @@ const (
 )
 
 func TestPacker(t *testing.T) {
+	genNewReference := os.Getenv("GENERATE_NEW_REFERENCE")
+
 	tests := []struct {
 		name        string
 		sourceFname string
@@ -69,6 +71,11 @@ func TestPacker(t *testing.T) {
 			}
 
 			pcm := pcmFromOgg(t, audioData)
+
+			if genNewReference != "" {
+				genNewRef(t, tt.refFname, pcm)
+				return
+			}
 
 			if tt.wantErr {
 				pcm = append(pcm, tt.errByte)
@@ -153,4 +160,23 @@ func TolerantByteDiff(tolerance int) cmp.Option {
 		}
 		return true
 	}))
+}
+
+func genNewRef(t *testing.T, refFileName string, pcmData []int16) {
+	t.Helper()
+
+	file, err := os.Create(refFileName)
+	if err != nil {
+		t.Fatalf("create reference file: %s", err.Error())
+	}
+	defer file.Close()
+
+	for _, sample := range pcmData {
+		err := binary.Write(file, binary.LittleEndian, sample)
+		if err != nil {
+			t.Fatalf("write pcm data to file: %s", err.Error())
+		}
+	}
+
+	fmt.Printf("New reference file %s successfully generated\n", refFileName)
 }
