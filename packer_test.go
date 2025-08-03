@@ -130,13 +130,19 @@ func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
 	}()
 
 	var pcmData bytes.Buffer
-	_, _ = io.Copy(&pcmData, stdout)
+	_, err := io.Copy(&pcmData, stdout)
+	if err != nil {
+		t.Fatalf("copy pcm data from stdout: %s", err.Error())
+	}
 
-	_ = cmd.Wait()
+	err = cmd.Wait()
+	if err != nil {
+		t.Fatalf("wait for copying from stdout: %s", err.Error())
+	}
 
 	pcmSamples := make([]int16, len(pcmData.Bytes())/2)
 	buf := bytes.NewBuffer(pcmData.Bytes())
-	err := binary.Read(buf, binary.LittleEndian, &pcmSamples)
+	err = binary.Read(buf, binary.LittleEndian, &pcmSamples)
 	if err != nil {
 		t.Fatalf("read pcm error: %s", err.Error())
 	}
