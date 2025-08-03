@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/paveldroo/go-ogg-packer/ogg"
 )
 
@@ -54,7 +53,7 @@ func TestPacker(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(refData, oggData) {
-				t.Fatal("base data and test data are not equal", cmp.Diff(refData, oggData))
+				t.Fatal("base data and test data are not equal")
 			}
 		})
 	}
