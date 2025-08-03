@@ -3,7 +3,7 @@ version: "3"
 dotenv: ['.env']
 
 env:
-  BASE_IMAGE: go-ogg-packer:base
+  BASE_IMAGE: paveldroo/go-ogg-packer:base
 
 tasks:
   install-mac-deps:
@@ -35,6 +35,11 @@ tasks:
     desc: Build docker image
     cmds:
       - docker build --platform=linux/amd64 -t {{.BASE_IMAGE}} -f Dockerfile .
+
+  docker-push:
+    desc: Push image to Docker Hub
+    cmds:
+      - docker push docker.io/{{.BASE_IMAGE}}
 
   docker-test:
     desc: Run tests in docker
