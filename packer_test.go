@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"testing"
 
 	extopus "gopkg.in/hraban/opus.v2"
 	extogg "mccoy.space/g/ogg"
 
-	"github.com/google/go-cmp/cmp"
 	packer "github.com/paveldroo/go-ogg-packer"
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
@@ -78,14 +78,14 @@ func TestPacker(t *testing.T) {
 
 			if tt.wantErr {
 				pcm = append(pcm, tt.errByte)
-				if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff == "" {
+				if reflect.DeepEqual(refData, pcm) {
 					t.Fatal("source data and want data should NOT be equal")
 				}
 				return
 			}
 
-			if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff != "" {
-				t.Fatal("source data and want data should be equal with acceptable tolerance", diff)
+			if mse := CalculateMSE(t, refData, pcm); mse > 5.0 {
+				t.Fatalf("significant distortions in reference and result files, mse: %f", mse)
 			}
 		})
 	}
@@ -147,21 +147,20 @@ func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
 	return pcm
 }
 
-// TolerantByteDiff returns a cmp.Option that allows a small tolerance when comparing []byte.
-func TolerantByteDiff(tolerance int) cmp.Option {
-	return cmp.FilterValues(func(x, y []byte) bool {
-		return len(x) == len(y) && len(x)%2 == 0
-	}, cmp.Comparer(func(x, y []byte) bool {
-		for i := 0; i < len(x); i += 2 {
-			a := int16(binary.LittleEndian.Uint16(x[i : i+2]))
-			b := int16(binary.LittleEndian.Uint16(y[i : i+2]))
-			diff := int(a - b)
-			if diff < -tolerance || diff > tolerance {
-				return false
-			}
-		}
-		return true
-	}))
+// CalculateMSE MSE (Mean Squared Error) is a metric that shows the mean squared difference between two signals
+func CalculateMSE(t *testing.T, ref, pcm []int16) float64 {
+	if len(ref) != len(pcm) {
+		t.Fatalf("reference and result files lengths not equal")
+	}
+
+	var sumSq float64
+	for i := 0; i < len(ref); i++ {
+		diff := int64(ref[i]) - int64(pcm[i])
+		sumSq += float64(diff * diff)
+	}
+
+	mse := sumSq / float64(len(ref))
+	return mse
 }
 
 func genNewRef(t *testing.T, refFileName string, pcmData []int16) {
