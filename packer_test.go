@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"testing"
 
@@ -151,10 +150,13 @@ func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
 // TolerantByteDiff returns a cmp.Option that allows a small tolerance when comparing []byte.
 func TolerantByteDiff(tolerance int) cmp.Option {
 	return cmp.FilterValues(func(x, y []byte) bool {
-		return len(x) == len(y)
+		return len(x) == len(y) && len(x)%2 == 0
 	}, cmp.Comparer(func(x, y []byte) bool {
-		for i := 0; i < len(x); i++ {
-			if int(math.Abs(float64(int(x[i])-int(y[i])))) > tolerance {
+		for i := 0; i < len(x); i += 2 {
+			a := int16(binary.LittleEndian.Uint16(x[i : i+2]))
+			b := int16(binary.LittleEndian.Uint16(y[i : i+2]))
+			diff := int(a - b)
+			if diff < -tolerance || diff > tolerance {
 				return false
 			}
 		}
