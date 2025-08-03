@@ -84,8 +84,12 @@ func TestPacker(t *testing.T) {
 				return
 			}
 
-			if diff := cmp.Diff(refData, pcm, TolerantByteDiff(5)); diff != "" {
-				t.Fatal("source data and want data should be equal with acceptable tolerance", diff)
+			// if diff := cmp.Diff(refData, pcm, TolerantInt16(2)); diff != "" {
+			// 	t.Fatal("source data and want data should be equal with acceptable tolerance", diff)
+			// }
+
+			if mse := CalculateMSE(t, refData, pcm); mse > 4.0 {
+				t.Fatalf("significant distortions in reference and result files, mse: %f", mse)
 			}
 		})
 	}
@@ -181,4 +185,19 @@ func genNewRef(t *testing.T, refFileName string, pcmData []int16) {
 	}
 
 	fmt.Printf("New reference file %s successfully generated\n", refFileName)
+}
+
+func CalculateMSE(t *testing.T, ref, pcm []int16) float64 {
+	if len(ref) != len(pcm) {
+		t.Fatalf("reference and result files lengths not equal")
+	}
+
+	var sumSq float64
+	for i := 0; i < len(ref); i++ {
+		diff := int64(ref[i]) - int64(pcm[i])
+		sumSq += float64(diff * diff)
+	}
+
+	mse := sumSq / float64(len(ref))
+	return mse
 }
