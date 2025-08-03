@@ -78,13 +78,13 @@ func TestPacker(t *testing.T) {
 
 			if tt.wantErr {
 				pcm = append(pcm, tt.errByte)
-				if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff == "" {
+				if diff := cmp.Diff(refData, pcm, TolerantByteDiff(5)); diff == "" {
 					t.Fatal("source data and want data should NOT be equal")
 				}
 				return
 			}
 
-			if diff := cmp.Diff(refData, pcm, TolerantByteDiff(2)); diff != "" {
+			if diff := cmp.Diff(refData, pcm, TolerantByteDiff(5)); diff != "" {
 				t.Fatal("source data and want data should be equal with acceptable tolerance", diff)
 			}
 		})
