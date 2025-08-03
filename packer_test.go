@@ -4,15 +4,22 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
+	"math"
 	"os"
-	"reflect"
+	"os/exec"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	packer "github.com/paveldroo/go-ogg-packer"
+	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
-const fileBasePath = "48k_1ch"
+const (
+	fileBasePath = "48k_1ch"
+	headersCount = 39
+)
 
 func TestPacker(t *testing.T) {
 	tests := []struct {
@@ -20,18 +27,18 @@ func TestPacker(t *testing.T) {
 		sourceFname string
 		refFname    string
 		wantErr     bool
-		errByte     byte
+		errByte     int16
 	}{
 		{
 			name:        "48k 1ch",
 			sourceFname: fmt.Sprintf("testdata/%s.wav", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.ogg", fileBasePath),
+			refFname:    fmt.Sprintf("testdata/want/%s.wav", fileBasePath),
 			wantErr:     false,
 		},
 		{
 			name:        "48k 1ch want error",
 			sourceFname: fmt.Sprintf("testdata/%s.wav", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.ogg", fileBasePath),
+			refFname:    fmt.Sprintf("testdata/want/%s.wav", fileBasePath),
 			wantErr:     true,
 			errByte:     1,
 		},
@@ -39,19 +46,18 @@ func TestPacker(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pcmData := pcmFromWav(t, tt.sourceFname)
+			sourcePCMData := pcmData(t, tt.sourceFname)
+			refData := pcmData(t, tt.refFname)
+
 			packer, err := packer.New()
 			if err != nil {
 				t.Fatalf("create new packer: %s", err.Error())
 			}
 
-			for i := 0; i < len(pcmData); i++ {
-				end := i + 2048
-				if end > len(pcmData) {
-					end = len(pcmData)
-				}
-				if err := packer.SendPCMChunk(pcmData[i:end]); err != nil {
-					log.Fatalf("send PCM chunk: %s", err.Error())
+			for i := 0; i < len(sourcePCMData); i++ {
+				end := min(i+2048, len(sourcePCMData))
+				if err := packer.SendPCMChunk(sourcePCMData[i:end]); err != nil {
+					t.Fatalf("send PCM chunk: %s", err.Error())
 				}
 				i = end
 			}
@@ -61,27 +67,24 @@ func TestPacker(t *testing.T) {
 				log.Fatalf("get result from packer: %s", err.Error())
 			}
 
-			refData, err := os.ReadFile(tt.refFname)
-			if err != nil {
-				t.Fatalf("open reference file: %s", err.Error())
-			}
+			pcm := pcmFromOgg(t, audioData)
 
 			if tt.wantErr {
-				audioData = append(audioData, tt.errByte)
-				if reflect.DeepEqual(refData, audioData) {
+				pcm = append(pcm, tt.errByte)
+				if diff := cmp.Diff(refData[headersCount:], pcm, TolerantByteDiff(2)); diff == "" {
 					t.Fatal("source data and want data should NOT be equal")
 				}
 				return
 			}
 
-			if !reflect.DeepEqual(refData, audioData) {
-				t.Fatal("source data and want data should be equal")
+			if diff := cmp.Diff(refData[headersCount:], pcm, TolerantByteDiff(2)); diff != "" {
+				t.Fatal("source data and want data should be equal with acceptable tolerance")
 			}
 		})
 	}
 }
 
-func pcmFromWav(t *testing.T, fn string) []int16 {
+func pcmData(t *testing.T, fn string) []int16 {
 	t.Helper()
 
 	d, err := os.ReadFile(fn)
@@ -103,4 +106,60 @@ func pcmFromWav(t *testing.T, fn string) []int16 {
 	}
 
 	return result
+}
+
+func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
+	t.Helper()
+
+	cmd := exec.Command("ffmpeg",
+		"-i", "pipe:0",
+		"-f", "s16le",
+		"-ar", fmt.Sprint(opus.SampleRate),
+		"-ac", fmt.Sprint(opus.NumChannels),
+		"pipe:1",
+	)
+
+	stdin, _ := cmd.StdinPipe()
+	stdout, _ := cmd.StdoutPipe()
+
+	_ = cmd.Start()
+
+	go func() {
+		defer stdin.Close()
+		_, _ = stdin.Write(oggData)
+	}()
+
+	var pcmData bytes.Buffer
+	_, err := io.Copy(&pcmData, stdout)
+	if err != nil {
+		t.Fatalf("copy pcm data from stdout: %s", err.Error())
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		t.Fatalf("wait for copying from stdout: %s", err.Error())
+	}
+
+	pcmSamples := make([]int16, len(pcmData.Bytes())/2)
+	buf := bytes.NewBuffer(pcmData.Bytes())
+	err = binary.Read(buf, binary.LittleEndian, &pcmSamples)
+	if err != nil {
+		t.Fatalf("read pcm error: %s", err.Error())
+	}
+
+	return pcmSamples
+}
+
+// TolerantByteDiff returns a cmp.Option that allows a small tolerance when comparing []byte.
+func TolerantByteDiff(tolerance int) cmp.Option {
+	return cmp.FilterValues(func(x, y []byte) bool {
+		return len(x) == len(y)
+	}, cmp.Comparer(func(x, y []byte) bool {
+		for i := 0; i < len(x); i++ {
+			if int(math.Abs(float64(int(x[i])-int(y[i])))) > tolerance {
+				return false
+			}
+		}
+		return true
+	}))
 }

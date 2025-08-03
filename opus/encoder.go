@@ -10,9 +10,9 @@ import (
 var ErrTooLargeLastPacket = errors.New("last packet length is greater than frame size")
 
 const (
+	FrameSize   = 60
 	SampleRate  = 48000
-	numChannels = 1
-	frameSize   = time.Duration(60) * time.Millisecond
+	NumChannels = 1
 )
 
 type Config struct {
@@ -24,8 +24,8 @@ type Config struct {
 func NewDefaultConfig() Config {
 	return Config{
 		SampleRate:  SampleRate,
-		NumChannels: numChannels,
-		FrameSize:   frameSize,
+		NumChannels: NumChannels,
+		FrameSize:   time.Duration(FrameSize) * time.Millisecond,
 	}
 }
 
