@@ -14,8 +14,7 @@ type Packer struct {
 	pcmBuffer   []int16
 }
 
-func New() (*Packer, error) {
-	cfg := opus.NewDefaultConfig()
+func New(cfg opus.Config) (*Packer, error) {
 	encoder, err := opus.NewEncoder(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create opus encoder: %s", err)

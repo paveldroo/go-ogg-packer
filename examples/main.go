@@ -10,13 +10,14 @@ import (
 	"time"
 
 	packer "github.com/paveldroo/go-ogg-packer"
+	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
 const wavFilePath = "examples/48k_1ch.wav"
 
 func main() {
 	pcmData := pcmFromWav()
-	packer, err := packer.New()
+	packer, err := packer.New(opus.NewDefaultConfig())
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}
