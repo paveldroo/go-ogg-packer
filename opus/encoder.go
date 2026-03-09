@@ -2,12 +2,19 @@ package opus
 
 import (
 	"errors"
+	"fmt"
 	"time"
+
+	"slices"
 
 	"gopkg.in/hraban/opus.v2"
 )
 
-var ErrTooLargeLastPacket = errors.New("last packet length is greater than frame size")
+var (
+	ErrTooLargeLastPacket = errors.New("last packet length is greater than frame size")
+	ErrInvalidSampleRate  = errors.New("invalid sample rate")
+	ValidSampleRates      = []int{8000, 16000, 24000, 48000}
+)
 
 const (
 	FrameSize   = 60
@@ -29,6 +36,14 @@ func NewDefaultConfig() Config {
 	}
 }
 
+func (c Config) Validate() error {
+	valid := slices.Contains(ValidSampleRates, c.SampleRate)
+	if !valid {
+		return fmt.Errorf("%w: got %d", ErrInvalidSampleRate, c.SampleRate)
+	}
+	return nil
+}
+
 type Encoder struct {
 	config           Config
 	encoder          *encoderWrapper
@@ -36,9 +51,13 @@ type Encoder struct {
 }
 
 func NewEncoder(config Config) (*Encoder, error) {
+	if err := config.Validate(); err != nil {
+		return nil, fmt.Errorf("config validation: %w", err)
+	}
+
 	encoder, err := newEncoderWrapper(config.SampleRate, config.NumChannels, opus.AppAudio)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create encoder wrapper: %w", err)
 	}
 
 	return &Encoder{

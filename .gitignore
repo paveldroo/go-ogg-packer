@@ -27,3 +27,6 @@ go.work.sum
 # Audio results
 internal/ogg/testdata/*.ogg
 examples/*.ogg
+
+# Agents
+.plans

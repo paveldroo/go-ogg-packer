@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	extopus "gopkg.in/hraban/opus.v2"
 	extogg "mccoy.space/g/ogg"
@@ -16,31 +17,48 @@ import (
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
-const (
-	fileBasePath = "48k_1ch"
-	headersCount = 39
-)
+const headersCount = 39
 
 func TestPacker(t *testing.T) {
 	genNewReference := os.Getenv("GENERATE_NEW_REFERENCE")
 
 	tests := []struct {
 		name        string
+		sampleRate  int
 		sourceFname string
 		refFname    string
 		wantErr     bool
 		errByte     int16
 	}{
 		{
+			name:        "8k 1ch",
+			sampleRate:  8000,
+			sourceFname: "testdata/8k_1ch.pcm",
+			refFname:    "testdata/want/8k_1ch.pcm",
+		},
+		{
+			name:        "16k 1ch",
+			sampleRate:  16000,
+			sourceFname: "testdata/16k_1ch.pcm",
+			refFname:    "testdata/want/16k_1ch.pcm",
+		},
+		{
+			name:        "24k 1ch",
+			sampleRate:  24000,
+			sourceFname: "testdata/24k_1ch.pcm",
+			refFname:    "testdata/want/24k_1ch.pcm",
+		},
+		{
 			name:        "48k 1ch",
-			sourceFname: fmt.Sprintf("testdata/%s.pcm", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.pcm", fileBasePath),
-			wantErr:     false,
+			sampleRate:  48000,
+			sourceFname: "testdata/48k_1ch.pcm",
+			refFname:    "testdata/want/48k_1ch.pcm",
 		},
 		{
 			name:        "48k 1ch want error",
-			sourceFname: fmt.Sprintf("testdata/%s.pcm", fileBasePath),
-			refFname:    fmt.Sprintf("testdata/want/%s.pcm", fileBasePath),
+			sampleRate:  48000,
+			sourceFname: "testdata/48k_1ch.pcm",
+			refFname:    "testdata/want/48k_1ch.pcm",
 			wantErr:     true,
 			errByte:     1,
 		},
@@ -49,32 +67,38 @@ func TestPacker(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sourcePCMData := pcmData(t, tt.sourceFname)
-			refData := pcmData(t, tt.refFname)
+			cfg := opus.Config{
+				SampleRate:  tt.sampleRate,
+				NumChannels: opus.NumChannels,
+				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+			}
 
-			packer, err := packer.New()
+			p, err := packer.New(cfg)
 			if err != nil {
 				t.Fatalf("create new packer: %s", err.Error())
 			}
 
 			for i := 0; i < len(sourcePCMData); i++ {
 				end := min(i+2048, len(sourcePCMData))
-				if err := packer.SendPCMChunk(sourcePCMData[i:end]); err != nil {
+				if err := p.SendPCMChunk(sourcePCMData[i:end]); err != nil {
 					t.Fatalf("send PCM chunk: %s", err.Error())
 				}
 				i = end
 			}
 
-			audioData, err := packer.GetResult()
+			audioData, err := p.GetResult()
 			if err != nil {
 				log.Fatalf("get result from packer: %s", err.Error())
 			}
 
-			pcm := pcmFromOgg(t, audioData)
+			pcm := pcmFromOgg(t, audioData, tt.sampleRate, opus.NumChannels)
 
 			if genNewReference != "" {
 				genNewRef(t, tt.refFname, pcm)
 				return
 			}
+
+			refData := pcmData(t, tt.refFname)
 
 			if tt.wantErr {
 				pcm = append(pcm, tt.errByte)
@@ -115,18 +139,18 @@ func pcmData(t *testing.T, fn string) []int16 {
 	return result
 }
 
-func pcmFromOgg(t *testing.T, oggData []byte) []int16 {
+func pcmFromOgg(t *testing.T, oggData []byte, sampleRate, numChannels int) []int16 {
 	t.Helper()
 
 	b := bytes.NewBuffer(oggData)
 	oggDecoder := extogg.NewDecoder(b)
 
-	opusDecoder, err := extopus.NewDecoder(opus.SampleRate, opus.NumChannels)
+	opusDecoder, err := extopus.NewDecoder(sampleRate, numChannels)
 	if err != nil {
 		t.Fatalf("create opus decoder: %s", err.Error())
 	}
 
-	pcmBuffer := make([]int16, opus.FrameSize*opus.SampleRate*opus.NumChannels/1000)
+	pcmBuffer := make([]int16, opus.FrameSize*sampleRate*numChannels/1000)
 
 	var pcm []int16
 	for {

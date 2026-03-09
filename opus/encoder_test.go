@@ -1,113 +1,143 @@
 package opus_test
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
 func TestEncoder_Encode(t *testing.T) {
-	cfg := opus.NewDefaultConfig()
-	frameSizeSamples := opus.FrameSizeSamples(cfg)
+	for _, sampleRate := range opus.ValidSampleRates {
+		t.Run(fmt.Sprintf("%dHz", sampleRate), func(t *testing.T) {
+			cfg := opus.Config{
+				SampleRate:  sampleRate,
+				NumChannels: opus.NumChannels,
+				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+			}
+			frameSizeSamples := opus.FrameSizeSamples(cfg)
 
-	tests := []struct {
-		name       string
-		pcmData    []int16
-		wantResLen int
-		wantPos    int
-	}{
-		{
-			name:       "1x opus packet",
-			pcmData:    generateRandomPCMData(frameSizeSamples),
-			wantResLen: 1,
-			wantPos:    frameSizeSamples,
-		},
-		{
-			name:       "2x opus packet",
-			pcmData:    generateRandomPCMData(frameSizeSamples * 2),
-			wantResLen: 2,
-			wantPos:    frameSizeSamples * 2,
-		},
-		{
-			name:       "0.5x opus packet",
-			pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 0.5)),
-			wantResLen: 0,
-			wantPos:    0,
-		},
-		{
-			name:       "2.5x opus packet",
-			pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 2.5)),
-			wantResLen: 2,
-			wantPos:    int(float32(frameSizeSamples) * 2),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			encoder, err := opus.NewEncoder(cfg)
-			if err != nil {
-				t.Fatalf("create opus encoder: %s", err.Error())
+			tests := []struct {
+				name       string
+				pcmData    []int16
+				wantResLen int
+				wantPos    int
+			}{
+				{
+					name:       "1x opus packet",
+					pcmData:    generateRandomPCMData(frameSizeSamples),
+					wantResLen: 1,
+					wantPos:    frameSizeSamples,
+				},
+				{
+					name:       "2x opus packet",
+					pcmData:    generateRandomPCMData(frameSizeSamples * 2),
+					wantResLen: 2,
+					wantPos:    frameSizeSamples * 2,
+				},
+				{
+					name:       "0.5x opus packet",
+					pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 0.5)),
+					wantResLen: 0,
+					wantPos:    0,
+				},
+				{
+					name:       "2.5x opus packet",
+					pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 2.5)),
+					wantResLen: 2,
+					wantPos:    int(float32(frameSizeSamples) * 2),
+				},
 			}
 
-			res, pos, err := encoder.Encode(tt.pcmData)
-			if err != nil {
-				t.Fatalf("encode pcm data: %s", err.Error())
-			}
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					encoder, err := opus.NewEncoder(cfg)
+					if err != nil {
+						t.Fatalf("create opus encoder: %s", err.Error())
+					}
 
-			if len(res) != tt.wantResLen {
-				t.Fatalf("result length should be equal %d, current %d", tt.wantResLen, len(res))
-			}
+					res, pos, err := encoder.Encode(tt.pcmData)
+					if err != nil {
+						t.Fatalf("encode pcm data: %s", err.Error())
+					}
 
-			if pos != tt.wantPos {
-				t.Fatalf("position should be equal %d, current %d", tt.wantPos, pos)
+					if len(res) != tt.wantResLen {
+						t.Fatalf("result length should be equal %d, current %d", tt.wantResLen, len(res))
+					}
+
+					if pos != tt.wantPos {
+						t.Fatalf("position should be equal %d, current %d", tt.wantPos, pos)
+					}
+				})
 			}
 		})
 	}
 }
 
 func TestEncoder_EncodeWithPadding(t *testing.T) {
-	cfg := opus.NewDefaultConfig()
-	frameSizeSamples := opus.FrameSizeSamples(cfg)
+	for _, sampleRate := range opus.ValidSampleRates {
+		t.Run(fmt.Sprintf("%dHz", sampleRate), func(t *testing.T) {
+			cfg := opus.Config{
+				SampleRate:  sampleRate,
+				NumChannels: opus.NumChannels,
+				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+			}
+			frameSizeSamples := opus.FrameSizeSamples(cfg)
 
-	tests := []struct {
-		name       string
-		pcmData    []int16
-		wantResLen int
-	}{
-		{
-			name:       "1x opus packet",
-			pcmData:    generateRandomPCMData(frameSizeSamples),
-			wantResLen: 1,
-		},
-		{
-			name:       "1.5x opus packet",
-			pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 1.5)),
-			wantResLen: 2,
-		},
-		{
-			name:       "0.5x opus packet",
-			pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 0.5)),
-			wantResLen: 1,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			encoder, err := opus.NewEncoder(cfg)
-			if err != nil {
-				t.Fatalf("create opus encoder: %s", err.Error())
+			tests := []struct {
+				name       string
+				pcmData    []int16
+				wantResLen int
+			}{
+				{
+					name:       "1x opus packet",
+					pcmData:    generateRandomPCMData(frameSizeSamples),
+					wantResLen: 1,
+				},
+				{
+					name:       "1.5x opus packet",
+					pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 1.5)),
+					wantResLen: 2,
+				},
+				{
+					name:       "0.5x opus packet",
+					pcmData:    generateRandomPCMData(int(float32(frameSizeSamples) * 0.5)),
+					wantResLen: 1,
+				},
 			}
 
-			res, err := encoder.EncodeWithPadding(tt.pcmData)
-			if err != nil {
-				t.Fatalf("encode pcm data: %s", err.Error())
-			}
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					encoder, err := opus.NewEncoder(cfg)
+					if err != nil {
+						t.Fatalf("create opus encoder: %s", err.Error())
+					}
 
-			if len(res) != tt.wantResLen {
-				t.Fatalf("result length should be equal %d, current %d", tt.wantResLen, len(res))
+					res, err := encoder.EncodeWithPadding(tt.pcmData)
+					if err != nil {
+						t.Fatalf("encode pcm data: %s", err.Error())
+					}
+
+					if len(res) != tt.wantResLen {
+						t.Fatalf("result length should be equal %d, current %d", tt.wantResLen, len(res))
+					}
+				})
 			}
 		})
+	}
+}
+
+func TestEncoder_InvalidSampleRate(t *testing.T) {
+	cfg := opus.Config{
+		SampleRate:  44100,
+		NumChannels: opus.NumChannels,
+		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+	}
+	_, err := opus.NewEncoder(cfg)
+	if err == nil {
+		t.Fatal("expected error for invalid sample rate 44100")
 	}
 }
 
