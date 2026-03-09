@@ -8,10 +8,11 @@ import (
 )
 
 type Packer struct {
-	result      []byte
-	opusEncoder *opus.Encoder
-	oggPacker   *ogg.Packer
-	pcmBuffer   []int16
+	result           []byte
+	opusEncoder      *opus.Encoder
+	oggPacker        *ogg.Packer
+	pcmBuffer        []int16
+	frameSizeSamples int
 }
 
 func New(cfg opus.Config) (*Packer, error) {
@@ -26,8 +27,9 @@ func New(cfg opus.Config) (*Packer, error) {
 	}
 
 	return &Packer{
-		opusEncoder: encoder,
-		oggPacker:   packer,
+		opusEncoder:      encoder,
+		oggPacker:        packer,
+		frameSizeSamples: opus.FrameSizeSamples(cfg),
 	}, nil
 }
 
@@ -40,7 +42,7 @@ func (s *Packer) SendPCMChunk(chunk []int16) error {
 
 	s.pcmBuffer = s.pcmBuffer[pos:]
 	for _, opusPacket := range currentOpusPackets {
-		if err := s.oggPacker.AddChunk(opusPacket, false, pos); err != nil {
+		if err := s.oggPacker.AddChunk(opusPacket, false, s.frameSizeSamples); err != nil {
 			return fmt.Errorf("add chunk: %w", err)
 		}
 	}
@@ -78,8 +80,9 @@ func (s *Packer) flushPCMBuffer() error {
 		return fmt.Errorf("encode: %w", err)
 	}
 
-	for _, opusPacket := range opusPackets {
-		if err := s.oggPacker.AddChunk(opusPacket, false, -1); err != nil {
+	for i, opusPacket := range opusPackets {
+		eos := i == len(opusPackets)-1
+		if err := s.oggPacker.AddChunk(opusPacket, eos, s.frameSizeSamples); err != nil {
 			return fmt.Errorf("add chunk: %w", err)
 		}
 	}
