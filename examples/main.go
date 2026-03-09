@@ -13,24 +13,30 @@ import (
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
-const wavFilePath = "examples/48k_1ch.wav"
+const (
+	wavFilePath = "examples/24k_1ch.wav"
+	sampleRate  = 24000
+)
 
 func main() {
 	pcmData := pcmFromWav()
-	packer, err := packer.New(opus.NewDefaultConfig())
+
+	cfg := opus.Config{
+		SampleRate:  sampleRate,
+		NumChannels: opus.NumChannels,
+		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+	}
+	packer, err := packer.New(cfg)
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}
 
-	for i := 0; i < len(pcmData); i++ {
-		end := i + 2048
-		if end > len(pcmData) {
-			end = len(pcmData)
-		}
+	const chunkSize = 2048
+	for i := 0; i < len(pcmData); i += chunkSize {
+		end := min(i+chunkSize, len(pcmData))
 		if err := packer.SendPCMChunk(pcmData[i:end]); err != nil {
 			log.Fatalf("send s16 chunk: %s", err.Error())
 		}
-		i = end
 	}
 
 	audioContent, err := packer.GetResult()
@@ -50,8 +56,9 @@ func pcmFromWav() []int16 {
 		log.Fatalf("open wav file: %s", err.Error())
 	}
 
-	reader := bytes.NewReader(d)
-	numValues := len(d) / 2
+	wavData := stripWithOffset(d)
+	reader := bytes.NewReader(wavData)
+	numValues := len(wavData) / 2
 
 	result := make([]int16, numValues)
 
@@ -64,6 +71,28 @@ func pcmFromWav() []int16 {
 	}
 
 	return result
+}
+
+func stripWithOffset(wavData []byte) []byte {
+	// Find the "data" chunk — WAV headers can vary in size due to extra chunks.
+	dataOffset := -1
+	pos := 12 // skip RIFF header
+	for pos < len(wavData)-8 {
+		chunkID := string(wavData[pos : pos+4])
+		chunkSize := int(binary.LittleEndian.Uint32(wavData[pos+4 : pos+8]))
+		if chunkID == "data" {
+			dataOffset = pos + 8
+			break
+		}
+		pos += 8 + chunkSize
+		if chunkSize%2 != 0 {
+			pos++ // align to even boundary
+		}
+	}
+	if dataOffset < 0 {
+		log.Fatalf("no data chunk found in WAV file")
+	}
+	return wavData[dataOffset:]
 }
 
 func writeOggFile(name string, data []byte) error {
