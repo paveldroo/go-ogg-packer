@@ -33,6 +33,12 @@ tasks:
 
   docker-build:
     desc: Build docker image
+    sources:
+      - Dockerfile
+      - go.mod
+      - go.sum
+    status:
+      - docker image inspect {{.BASE_IMAGE}}
     cmds:
       - docker build --platform=linux/amd64 -t {{.BASE_IMAGE}} -f Dockerfile .
 
@@ -45,7 +51,7 @@ tasks:
     desc: Run tests in docker
     cmds:
       - task docker-build
-      - docker run {{.BASE_IMAGE}} task test
+      - docker run -v "{{.PWD}}:/app/" {{.BASE_IMAGE}} task test
 
   docker-generate-ref:
     desc: Generate all reference files for tests in Linux
