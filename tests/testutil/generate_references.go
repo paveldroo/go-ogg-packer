@@ -39,12 +39,12 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate, channels int) e
 		return fmt.Errorf("create packer: %w", err)
 	}
 
-	for i := 0; i < len(sourcePCM); i++ {
-		end := min(i+2048, len(sourcePCM))
+	const chunkSize = 2048
+	for i := 0; i < len(sourcePCM); i += chunkSize {
+		end := min(i+chunkSize, len(sourcePCM))
 		if err := p.SendPCMChunk(sourcePCM[i:end]); err != nil {
 			return fmt.Errorf("send PCM chunk: %w", err)
 		}
-		i = end
 	}
 
 	audioData, err := p.GetResult()

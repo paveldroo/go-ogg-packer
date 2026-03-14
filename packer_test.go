@@ -121,12 +121,12 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("create new packer: %s", err.Error())
 			}
 
-			for i := 0; i < len(sourcePCMData); i++ {
-				end := min(i+2048, len(sourcePCMData))
+			const chunkSize = 2048
+			for i := 0; i < len(sourcePCMData); i += chunkSize {
+				end := min(i+chunkSize, len(sourcePCMData))
 				if err := p.SendPCMChunk(sourcePCMData[i:end]); err != nil {
 					t.Fatalf("send PCM chunk: %s", err.Error())
 				}
-				i = end
 			}
 
 			audioData, err := p.GetResult()
