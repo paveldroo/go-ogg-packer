@@ -2,7 +2,6 @@ package packer_test
 
 import (
 	"log"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -15,8 +14,6 @@ import (
 const headersCount = 39
 
 func TestPacker(t *testing.T) {
-	genNewReference := os.Getenv("GENERATE_NEW_REFERENCE")
-
 	tests := []struct {
 		name        string
 		sampleRate  int
@@ -93,11 +90,6 @@ func TestPacker(t *testing.T) {
 			}
 
 			pcm := testutil.PCMFromOgg(t, audioData, tt.sampleRate, opus.NumChannels)
-
-			if genNewReference != "" {
-				testutil.GenNewRef(t, tt.refFname, pcm)
-				return
-			}
 
 			refData := testutil.PCMData(t, tt.refFname)
 

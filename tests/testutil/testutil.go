@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/gob"
-	"fmt"
 	"os"
-	"path"
 	"testing"
 
 	extopus "gopkg.in/hraban/opus.v2"
@@ -52,40 +50,6 @@ func RawOpusPackets(t testing.TB, fname string) [][]byte {
 	}
 
 	return audioData
-}
-
-// WriteOggFile writes binary data to an OGG file.
-func WriteOggFile(t testing.TB, fname string, data []byte) {
-	t.Helper()
-
-	wDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("get current work directory: %s", err)
-	}
-
-	fPath := path.Join(wDir, fname)
-	if err := os.WriteFile(fPath, data, 0666); err != nil {
-		t.Fatalf("write result file: %s", err)
-	}
-}
-
-// GenNewRef writes int16 PCM samples to a reference file.
-func GenNewRef(t testing.TB, refFileName string, pcmData []int16) {
-	t.Helper()
-
-	file, err := os.Create(refFileName)
-	if err != nil {
-		t.Fatalf("create reference file: %s", err)
-	}
-	defer file.Close()
-
-	for _, sample := range pcmData {
-		if err := binary.Write(file, binary.LittleEndian, sample); err != nil {
-			t.Fatalf("write pcm data to file: %s", err)
-		}
-	}
-
-	fmt.Printf("New reference file %s successfully generated\n", refFileName)
 }
 
 // PCMFromOgg decodes OGG/Opus data back to PCM samples.
