@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-generate-ref
+./generate-ref
 
 # Test binary, built with `go test -c`
 *.test
@@ -28,6 +28,9 @@ go.work.sum
 # Audio results
 internal/ogg/testdata/*.ogg
 examples/*.ogg
+
+# Generated PCM source files (from yanka.wav via task generate-ref)
+tests/testdata/input/*_1ch.pcm
 
 # Agents
 .plans
