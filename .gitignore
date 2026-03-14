@@ -29,8 +29,5 @@ go.work.sum
 internal/ogg/testdata/*.ogg
 examples/*.ogg
 
-# Generated PCM source files (from yanka.wav via task generate-ref)
-tests/testdata/input/*_1ch.pcm
-
 # Agents
 .plans

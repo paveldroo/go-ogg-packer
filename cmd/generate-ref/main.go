@@ -9,7 +9,7 @@ import (
 	"github.com/paveldroo/go-ogg-packer/tests/testutil"
 )
 
-const wavSource = "tests/testdata/input/yanka.wav"
+const wavSource = "tests/testdata/source/yanka.wav"
 
 var rates = []struct {
 	sampleRate int
