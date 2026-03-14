@@ -37,6 +37,12 @@ func TestPacker(t *testing.T) {
 			refFname:    "testdata/want/8k_1ch.pcm",
 		},
 		{
+			name:        "12k 1ch",
+			sampleRate:  12000,
+			sourceFname: "testdata/12k_1ch.pcm",
+			refFname:    "testdata/want/12k_1ch.pcm",
+		},
+		{
 			name:        "16k 1ch",
 			sampleRate:  16000,
 			sourceFname: "testdata/16k_1ch.pcm",

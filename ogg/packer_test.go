@@ -29,6 +29,12 @@ func TestPacker(t *testing.T) {
 			sampleRate: 8000,
 		},
 		{
+			name:       "12k 1ch",
+			fileBase:   "12k_1ch",
+			channels:   1,
+			sampleRate: 12000,
+		},
+		{
 			name:       "16k 1ch",
 			fileBase:   "16k_1ch",
 			channels:   1,
@@ -107,6 +113,7 @@ func TestGenerateOpusRaw(t *testing.T) {
 		pcmSource  string
 	}{
 		{8000, "8k_1ch", "../testdata/8k_1ch.pcm"},
+		{12000, "12k_1ch", "../testdata/12k_1ch.pcm"},
 		{16000, "16k_1ch", "../testdata/16k_1ch.pcm"},
 		{24000, "24k_1ch", "../testdata/24k_1ch.pcm"},
 		{48000, "48k_1ch", "../testdata/48k_1ch.pcm"},

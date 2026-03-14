@@ -13,7 +13,7 @@ import (
 var (
 	ErrTooLargeLastPacket = errors.New("last packet length is greater than frame size")
 	ErrInvalidSampleRate  = errors.New("invalid sample rate")
-	ValidSampleRates      = []int{8000, 16000, 24000, 48000}
+	ValidSampleRates      = []int{8000, 12000, 16000, 24000, 48000}
 )
 
 const (
