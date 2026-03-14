@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+
+	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
 const preSkip = 312 // libopus encoder lookahead in 48kHz samples (per RFC 7845)
@@ -39,7 +41,16 @@ func New(channelCount uint8, sampleRate uint32, serialNo uint32) (*Packer, error
 
 // AddChunk adds an opus packet to the ogg stream.
 // samplesCount is the total number of PCM samples (across all channels) in the packet.
+// When samplesCount < 0, the sample count is derived from the opus TOC byte (RFC 6716 §3.1).
 func (p *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
+	if samplesCount < 0 {
+		sc, err := opus.SamplesCount(data, p.channelCount, p.sampleRate)
+		if err != nil {
+			return fmt.Errorf("parse opus TOC: %w", err)
+		}
+		samplesCount = sc
+	}
+
 	numSamplesPerChannel := samplesCount / int(p.channelCount)
 
 	// Granule positions are always in 48kHz samples per RFC 7845.

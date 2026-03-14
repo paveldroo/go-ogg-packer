@@ -125,6 +125,9 @@ func TestPacker(t *testing.T) {
 }
 
 func TestPacker_EOS(t *testing.T) {
+	// 48kHz * 60ms * 1ch / 1000 = 2880 total samples
+	frameSizeSamples := 2880
+
 	t.Run("ReadPages patches EOS on last page", func(t *testing.T) {
 		packer, err := ogg.New(1, 48000, testutil.TestSerialNo)
 		if err != nil {
@@ -134,7 +137,7 @@ func TestPacker_EOS(t *testing.T) {
 		opusFilename := "../tests/testdata/opus_raw/48k_1ch.opus_raw"
 		packets := testutil.RawOpusPackets(t, opusFilename)
 		for _, packet := range packets {
-			if err := packer.AddChunk(packet, false, 2880); err != nil {
+			if err := packer.AddChunk(packet, false, frameSizeSamples); err != nil {
 				t.Fatalf("add chunk: %s", err)
 			}
 		}
@@ -157,7 +160,7 @@ func TestPacker_EOS(t *testing.T) {
 		packets := testutil.RawOpusPackets(t, opusFilename)
 		for i, packet := range packets {
 			eos := i == len(packets)-1
-			if err := packer.AddChunk(packet, eos, 2880); err != nil {
+			if err := packer.AddChunk(packet, eos, frameSizeSamples); err != nil {
 				t.Fatalf("add chunk: %s", err)
 			}
 		}
@@ -169,6 +172,51 @@ func TestPacker_EOS(t *testing.T) {
 
 		assertLastPageHasEOS(t, oggData)
 	})
+}
+
+func TestPacker_AutoSamplesCount(t *testing.T) {
+	tests := []struct {
+		name       string
+		fileBase   string
+		channels   int
+		sampleRate int
+	}{
+		{name: "48k 1ch", fileBase: "48k_1ch", channels: 1, sampleRate: 48000},
+		{name: "48k 2ch", fileBase: "48k_2ch", channels: 2, sampleRate: 48000},
+		{name: "16k 1ch", fileBase: "16k_1ch", channels: 1, sampleRate: 16000},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			packer, err := ogg.New(uint8(tt.channels), uint32(tt.sampleRate), testutil.TestSerialNo)
+			if err != nil {
+				t.Fatalf("create ogg packer: %s", err)
+			}
+
+			opusFilename := fmt.Sprintf("../tests/testdata/opus_raw/%s.opus_raw", tt.fileBase)
+			rawOpusData := testutil.RawOpusPackets(t, opusFilename)
+			for _, packet := range rawOpusData {
+				if err := packer.AddChunk(packet, false, -1); err != nil {
+					t.Fatalf("add chunk: %s", err)
+				}
+			}
+
+			oggData, err := packer.ReadPages()
+			if err != nil {
+				t.Fatalf("read pages: %s", err)
+			}
+
+			refFilename := fmt.Sprintf("../tests/testdata/want/ogg/%s.ogg", tt.fileBase)
+			refData, err := os.ReadFile(refFilename)
+			if err != nil {
+				t.Fatalf("open reference file: %s", err)
+			}
+
+			if !reflect.DeepEqual(refData, oggData) {
+				t.Fatal("auto samples count: output does not match reference")
+			}
+		})
+	}
 }
 
 func assertLastPageHasEOS(t *testing.T, data []byte) {
