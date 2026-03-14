@@ -7,6 +7,8 @@ import (
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
+const DefaultPCMChunkSize = 2048
+
 type Packer struct {
 	result           []byte
 	opusEncoder      *opus.Encoder

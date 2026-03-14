@@ -121,9 +121,11 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("create new packer: %s", err.Error())
 			}
 
-			const chunkSize = 2048
-			for i := 0; i < len(sourcePCMData); i += chunkSize {
-				end := min(i+chunkSize, len(sourcePCMData))
+			for i := 0; i < len(sourcePCMData); i += packer.DefaultPCMChunkSize {
+				end := i + packer.DefaultPCMChunkSize
+				if end > len(sourcePCMData) {
+					end = len(sourcePCMData)
+				}
 				if err := p.SendPCMChunk(sourcePCMData[i:end]); err != nil {
 					t.Fatalf("send PCM chunk: %s", err.Error())
 				}

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"slices"
-
 	"gopkg.in/hraban/opus.v2"
 )
 
@@ -39,13 +37,22 @@ func NewDefaultConfig() Config {
 }
 
 func (c Config) Validate() error {
-	if !slices.Contains(ValidSampleRates, c.SampleRate) {
+	if !intSliceContains(ValidSampleRates, c.SampleRate) {
 		return fmt.Errorf("%w: got %d", ErrInvalidSampleRate, c.SampleRate)
 	}
-	if !slices.Contains(ValidChannelCounts, c.NumChannels) {
+	if !intSliceContains(ValidChannelCounts, c.NumChannels) {
 		return fmt.Errorf("%w: got %d", ErrInvalidChannelCount, c.NumChannels)
 	}
 	return nil
+}
+
+func intSliceContains(s []int, v int) bool {
+	for _, x := range s {
+		if x == v {
+			return true
+		}
+	}
+	return false
 }
 
 type Encoder struct {

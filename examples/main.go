@@ -29,20 +29,22 @@ func main() {
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
 	serialNo := rand.New(rand.NewSource(time.Now().UnixNano())).Uint32()
-	packer, err := packer.New(cfg, serialNo)
+	p, err := packer.New(cfg, serialNo)
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}
 
-	const chunkSize = 2048
-	for i := 0; i < len(pcmData); i += chunkSize {
-		end := min(i+chunkSize, len(pcmData))
-		if err := packer.SendPCMChunk(pcmData[i:end]); err != nil {
+	for i := 0; i < len(pcmData); i += packer.DefaultPCMChunkSize {
+		end := i + packer.DefaultPCMChunkSize
+		if end > len(pcmData) {
+			end = len(pcmData)
+		}
+		if err := p.SendPCMChunk(pcmData[i:end]); err != nil {
 			log.Fatalf("send s16 chunk: %s", err.Error())
 		}
 	}
 
-	audioContent, err := packer.GetResult()
+	audioContent, err := p.GetResult()
 	if err != nil {
 		log.Fatalf("get result from packer: %s", err.Error())
 	}
