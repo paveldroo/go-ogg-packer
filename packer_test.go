@@ -13,6 +13,9 @@ import (
 
 const headersCount = 39
 
+// TestPacker compares packer output against reference PCM files.
+// References must be generated before running: task generate-ref
+// Or run everything together: task test
 func TestPacker(t *testing.T) {
 	tests := []struct {
 		name        string

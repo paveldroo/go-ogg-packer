@@ -34,7 +34,6 @@ tasks:
   test:
     desc: Run tests
     cmds:
-      - task generate-ref
       - go test -v -shuffle=on -cover -race ./...
 
   docker-build:

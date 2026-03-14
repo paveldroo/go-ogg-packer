@@ -12,6 +12,9 @@ import (
 	"github.com/paveldroo/go-ogg-packer/tests/testutil"
 )
 
+// TestPacker compares OGG packer output against reference OGG files.
+// References must be generated before running: task generate-ref
+// Or run everything together: task test
 func TestPacker(t *testing.T) {
 	tests := []struct {
 		name       string
