@@ -26,9 +26,15 @@ tasks:
     cmds:
       - golangci-lint run
 
+  generate-ref:
+    desc: Generate all reference files for tests
+    cmds:
+      - go run ./cmd/generate-ref
+
   test:
     desc: Run tests
     cmds:
+      - task generate-ref
       - go test -v -shuffle=on -cover -race ./...
 
   docker-build:
@@ -57,4 +63,4 @@ tasks:
     desc: Generate all reference files for tests in Linux
     cmds:
       - task docker-build
-      - docker run -v "{{.PWD}}:/app/" {{.BASE_IMAGE}} go run ./cmd/generate-ref
+      - docker run -v "{{.PWD}}:/app/" {{.BASE_IMAGE}} task generate-ref
