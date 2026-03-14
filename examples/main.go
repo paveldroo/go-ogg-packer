@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path"
 	"time"
@@ -27,7 +28,8 @@ func main() {
 		NumChannels: numChannels,
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
-	packer, err := packer.New(cfg)
+	serialNo := rand.New(rand.NewSource(time.Now().UnixNano())).Uint32()
+	packer, err := packer.New(cfg, serialNo)
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}

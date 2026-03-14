@@ -13,6 +13,9 @@ import (
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
+// TestSerialNo is a fixed OGG serial number used in tests and reference generation for deterministic output.
+const TestSerialNo uint32 = 99999
+
 // PCMData reads a raw PCM file and returns int16 samples.
 func PCMData(t testing.TB, fn string) []int16 {
 	t.Helper()

@@ -8,24 +8,23 @@ import (
 	"runtime"
 )
 
-const (
-	serialNo = 99999 // const for testing similarity in active development phase. Should be `rand.New(rand.NewSource(time.Now().UTC().Unix() % 0x80000000)).Int31()` in real world.
-	preSkip  = 312   // libopus encoder lookahead in 48kHz samples (per RFC 7845)
-)
+const preSkip = 312 // libopus encoder lookahead in 48kHz samples (per RFC 7845)
 
 type Packer struct {
 	channelCount uint8
 	sampleRate   uint32
+	serialNo     uint32
 	packetNo     int64
 	granulePos   int64
 	buffer       bytes.Buffer
 	oggEncoder   *Encoder
 }
 
-func New(channelCount uint8, sampleRate uint32) (*Packer, error) {
+func New(channelCount uint8, sampleRate uint32, serialNo uint32) (*Packer, error) {
 	p := Packer{
 		channelCount: channelCount,
 		sampleRate:   sampleRate,
+		serialNo:     serialNo,
 		packetNo:     1,
 	}
 
@@ -76,7 +75,7 @@ func (p *Packer) Close() {
 }
 
 func (p *Packer) init() error {
-	p.oggEncoder = NewEncoder(serialNo, &p.buffer)
+	p.oggEncoder = NewEncoder(p.serialNo, &p.buffer)
 
 	if err := p.addHeader(); err != nil {
 		return fmt.Errorf("add header to ogg stream: %w", err)

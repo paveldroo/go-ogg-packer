@@ -34,7 +34,7 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate, channels int) e
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
 
-	p, err := packer.New(cfg)
+	p, err := packer.New(cfg, TestSerialNo)
 	if err != nil {
 		return fmt.Errorf("create packer: %w", err)
 	}
@@ -84,7 +84,7 @@ func GenerateOggRef(opusRawFname, refFname string, channels, sampleRate int) err
 	}
 	frameSizeSamples := opus.FrameSizeSamples(cfg)
 
-	p, err := ogg.New(uint8(channels), uint32(sampleRate))
+	p, err := ogg.New(uint8(channels), uint32(sampleRate), TestSerialNo)
 	if err != nil {
 		return fmt.Errorf("create ogg packer: %w", err)
 	}
