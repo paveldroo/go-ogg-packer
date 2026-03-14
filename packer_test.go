@@ -20,6 +20,7 @@ func TestPacker(t *testing.T) {
 	tests := []struct {
 		name        string
 		sampleRate  int
+		channels    int
 		sourceFname string
 		refFname    string
 		wantErr     bool
@@ -28,36 +29,77 @@ func TestPacker(t *testing.T) {
 		{
 			name:        "8k 1ch",
 			sampleRate:  8000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/8k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/8k_1ch.pcm",
 		},
 		{
 			name:        "12k 1ch",
 			sampleRate:  12000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/12k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/12k_1ch.pcm",
 		},
 		{
 			name:        "16k 1ch",
 			sampleRate:  16000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/16k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/16k_1ch.pcm",
 		},
 		{
 			name:        "24k 1ch",
 			sampleRate:  24000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/24k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/24k_1ch.pcm",
 		},
 		{
 			name:        "48k 1ch",
 			sampleRate:  48000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/48k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/48k_1ch.pcm",
 		},
 		{
+			name:        "8k 2ch",
+			sampleRate:  8000,
+			channels:    2,
+			sourceFname: "tests/testdata/input/8k_2ch.pcm",
+			refFname:    "tests/testdata/want/packer/8k_2ch.pcm",
+		},
+		{
+			name:        "12k 2ch",
+			sampleRate:  12000,
+			channels:    2,
+			sourceFname: "tests/testdata/input/12k_2ch.pcm",
+			refFname:    "tests/testdata/want/packer/12k_2ch.pcm",
+		},
+		{
+			name:        "16k 2ch",
+			sampleRate:  16000,
+			channels:    2,
+			sourceFname: "tests/testdata/input/16k_2ch.pcm",
+			refFname:    "tests/testdata/want/packer/16k_2ch.pcm",
+		},
+		{
+			name:        "24k 2ch",
+			sampleRate:  24000,
+			channels:    2,
+			sourceFname: "tests/testdata/input/24k_2ch.pcm",
+			refFname:    "tests/testdata/want/packer/24k_2ch.pcm",
+		},
+		{
+			name:        "48k 2ch",
+			sampleRate:  48000,
+			channels:    2,
+			sourceFname: "tests/testdata/input/48k_2ch.pcm",
+			refFname:    "tests/testdata/want/packer/48k_2ch.pcm",
+		},
+		{
 			name:        "48k 1ch want error",
 			sampleRate:  48000,
+			channels:    1,
 			sourceFname: "tests/testdata/input/48k_1ch.pcm",
 			refFname:    "tests/testdata/want/packer/48k_1ch.pcm",
 			wantErr:     true,
@@ -70,7 +112,7 @@ func TestPacker(t *testing.T) {
 			sourcePCMData := testutil.PCMData(t, tt.sourceFname)
 			cfg := opus.Config{
 				SampleRate:  tt.sampleRate,
-				NumChannels: opus.NumChannels,
+				NumChannels: tt.channels,
 				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 			}
 
@@ -79,12 +121,12 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("create new packer: %s", err.Error())
 			}
 
-			for i := 0; i < len(sourcePCMData); i++ {
-				end := min(i+2048, len(sourcePCMData))
+			const chunkSize = 2048
+			for i := 0; i < len(sourcePCMData); i += chunkSize {
+				end := min(i+chunkSize, len(sourcePCMData))
 				if err := p.SendPCMChunk(sourcePCMData[i:end]); err != nil {
 					t.Fatalf("send PCM chunk: %s", err.Error())
 				}
-				i = end
 			}
 
 			audioData, err := p.GetResult()
@@ -92,7 +134,7 @@ func TestPacker(t *testing.T) {
 				log.Fatalf("get result from packer: %s", err.Error())
 			}
 
-			pcm := testutil.PCMFromOgg(t, audioData, tt.sampleRate, opus.NumChannels)
+			pcm := testutil.PCMFromOgg(t, audioData, tt.sampleRate, tt.channels)
 
 			refData := testutil.PCMData(t, tt.refFname)
 

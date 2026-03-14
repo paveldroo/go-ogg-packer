@@ -78,7 +78,7 @@ func PCMFromOgg(t testing.TB, oggData []byte, sampleRate, numChannels int) []int
 			if err != nil {
 				continue
 			}
-			pcm = append(pcm, pcmBuffer[:n]...)
+			pcm = append(pcm, pcmBuffer[:n*numChannels]...)
 		}
 	}
 

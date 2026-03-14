@@ -52,6 +52,36 @@ func TestPacker(t *testing.T) {
 			channels:   1,
 			sampleRate: 48000,
 		},
+		{
+			name:       "8k 2ch",
+			fileBase:   "8k_2ch",
+			channels:   2,
+			sampleRate: 8000,
+		},
+		{
+			name:       "12k 2ch",
+			fileBase:   "12k_2ch",
+			channels:   2,
+			sampleRate: 12000,
+		},
+		{
+			name:       "16k 2ch",
+			fileBase:   "16k_2ch",
+			channels:   2,
+			sampleRate: 16000,
+		},
+		{
+			name:       "24k 2ch",
+			fileBase:   "24k_2ch",
+			channels:   2,
+			sampleRate: 24000,
+		},
+		{
+			name:       "48k 2ch",
+			fileBase:   "48k_2ch",
+			channels:   2,
+			sampleRate: 48000,
+		},
 	}
 
 	for _, tt := range tests {

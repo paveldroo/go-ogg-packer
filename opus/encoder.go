@@ -11,9 +11,11 @@ import (
 )
 
 var (
-	ErrTooLargeLastPacket = errors.New("last packet length is greater than frame size")
-	ErrInvalidSampleRate  = errors.New("invalid sample rate")
-	ValidSampleRates      = []int{8000, 12000, 16000, 24000, 48000}
+	ErrTooLargeLastPacket  = errors.New("last packet length is greater than frame size")
+	ErrInvalidSampleRate   = errors.New("invalid sample rate")
+	ErrInvalidChannelCount = errors.New("invalid channel count")
+	ValidSampleRates       = []int{8000, 12000, 16000, 24000, 48000}
+	ValidChannelCounts     = []int{1, 2}
 )
 
 const (
@@ -37,9 +39,11 @@ func NewDefaultConfig() Config {
 }
 
 func (c Config) Validate() error {
-	valid := slices.Contains(ValidSampleRates, c.SampleRate)
-	if !valid {
+	if !slices.Contains(ValidSampleRates, c.SampleRate) {
 		return fmt.Errorf("%w: got %d", ErrInvalidSampleRate, c.SampleRate)
+	}
+	if !slices.Contains(ValidChannelCounts, c.NumChannels) {
+		return fmt.Errorf("%w: got %d", ErrInvalidChannelCount, c.NumChannels)
 	}
 	return nil
 }

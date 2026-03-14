@@ -17,7 +17,7 @@ import (
 )
 
 // GeneratePackerRef runs the full packer pipeline and writes a PCM reference file.
-func GeneratePackerRef(sourceFname, refFname string, sampleRate int) error {
+func GeneratePackerRef(sourceFname, refFname string, sampleRate, channels int) error {
 	pcmBytes, err := os.ReadFile(sourceFname)
 	if err != nil {
 		return fmt.Errorf("read pcm source: %w", err)
@@ -30,7 +30,7 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate int) error {
 
 	cfg := opus.Config{
 		SampleRate:  sampleRate,
-		NumChannels: opus.NumChannels,
+		NumChannels: channels,
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
 
@@ -39,12 +39,12 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate int) error {
 		return fmt.Errorf("create packer: %w", err)
 	}
 
-	for i := 0; i < len(sourcePCM); i++ {
-		end := min(i+2048, len(sourcePCM))
+	const chunkSize = 2048
+	for i := 0; i < len(sourcePCM); i += chunkSize {
+		end := min(i+chunkSize, len(sourcePCM))
 		if err := p.SendPCMChunk(sourcePCM[i:end]); err != nil {
 			return fmt.Errorf("send PCM chunk: %w", err)
 		}
-		i = end
 	}
 
 	audioData, err := p.GetResult()
@@ -52,7 +52,7 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate int) error {
 		return fmt.Errorf("get result: %w", err)
 	}
 
-	pcm := pcmFromOgg(audioData, sampleRate, opus.NumChannels)
+	pcm := pcmFromOgg(audioData, sampleRate, channels)
 
 	file, err := os.Create(refFname)
 	if err != nil {
@@ -109,7 +109,7 @@ func GenerateOggRef(opusRawFname, refFname string, channels, sampleRate int) err
 }
 
 // GenerateOpusRaw encodes PCM to opus packets and writes a GOB-encoded file.
-func GenerateOpusRaw(pcmSource, outPath string, sampleRate int) error {
+func GenerateOpusRaw(pcmSource, outPath string, sampleRate, channels int) error {
 	pcmBytes, err := os.ReadFile(pcmSource)
 	if err != nil {
 		return fmt.Errorf("read pcm: %w", err)
@@ -122,7 +122,7 @@ func GenerateOpusRaw(pcmSource, outPath string, sampleRate int) error {
 
 	cfg := opus.Config{
 		SampleRate:  sampleRate,
-		NumChannels: opus.NumChannels,
+		NumChannels: channels,
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
 
@@ -169,7 +169,7 @@ func pcmFromOgg(oggData []byte, sampleRate, numChannels int) []int16 {
 			if err != nil {
 				continue
 			}
-			pcm = append(pcm, pcmBuffer[:n]...)
+			pcm = append(pcm, pcmBuffer[:n*numChannels]...)
 		}
 	}
 	return pcm
