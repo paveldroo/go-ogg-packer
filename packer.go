@@ -15,13 +15,13 @@ type Packer struct {
 	frameSizeSamples int
 }
 
-func New(cfg opus.Config) (*Packer, error) {
+func New(cfg opus.Config, serialNo uint32) (*Packer, error) {
 	encoder, err := opus.NewEncoder(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create opus encoder: %s", err)
 	}
 
-	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate))
+	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate), serialNo)
 	if err != nil {
 		return nil, fmt.Errorf("create ogg packer: %w", err)
 	}

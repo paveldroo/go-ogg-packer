@@ -116,7 +116,7 @@ func TestPacker(t *testing.T) {
 				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 			}
 
-			p, err := packer.New(cfg)
+			p, err := packer.New(cfg, testutil.TestSerialNo)
 			if err != nil {
 				t.Fatalf("create new packer: %s", err.Error())
 			}

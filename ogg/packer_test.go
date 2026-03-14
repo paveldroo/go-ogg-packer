@@ -86,7 +86,7 @@ func TestPacker(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			packer, err := ogg.New(uint8(tt.channels), uint32(tt.sampleRate))
+			packer, err := ogg.New(uint8(tt.channels), uint32(tt.sampleRate), testutil.TestSerialNo)
 			if err != nil {
 				t.Fatalf("create ogg packer: %s", err.Error())
 			}
@@ -126,7 +126,7 @@ func TestPacker(t *testing.T) {
 
 func TestPacker_EOS(t *testing.T) {
 	t.Run("ReadPages patches EOS on last page", func(t *testing.T) {
-		packer, err := ogg.New(1, 48000)
+		packer, err := ogg.New(1, 48000, testutil.TestSerialNo)
 		if err != nil {
 			t.Fatalf("create ogg packer: %s", err)
 		}
@@ -148,7 +148,7 @@ func TestPacker_EOS(t *testing.T) {
 	})
 
 	t.Run("explicit EOS via AddChunk", func(t *testing.T) {
-		packer, err := ogg.New(1, 48000)
+		packer, err := ogg.New(1, 48000, testutil.TestSerialNo)
 		if err != nil {
 			t.Fatalf("create ogg packer: %s", err)
 		}
