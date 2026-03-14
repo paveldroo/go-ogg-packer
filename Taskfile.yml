@@ -48,7 +48,9 @@ tasks:
       - docker run {{.BASE_IMAGE}} task test
 
   docker-generate-ref:
-    desc: Generate reference file for tests in Linux
+    desc: Generate all reference files for tests in Linux
     cmds:
       - task docker-build
-      - docker run -v "{{.PWD}}:/app/" -e "GENERATE_NEW_REFERENCE=true" {{.BASE_IMAGE}} go test . -run TestPacker
+      - docker run -v "{{.PWD}}:/app/" -e "GENERATE_OPUS_RAW=true" {{.BASE_IMAGE}} go test ./ogg/ -run TestGenerateOpusRaw -v
+      - docker run -v "{{.PWD}}:/app/" -e "GENERATE_NEW_REFERENCE=true" {{.BASE_IMAGE}} go test ./ogg/ -run TestPacker -v
+      - docker run -v "{{.PWD}}:/app/" -e "GENERATE_NEW_REFERENCE=true" {{.BASE_IMAGE}} go test . -run TestPacker -v
