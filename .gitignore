@@ -31,3 +31,6 @@ examples/*.ogg
 
 # Agents
 .plans
+
+# Task utility files
+.task/checksum

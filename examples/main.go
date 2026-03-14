@@ -14,8 +14,9 @@ import (
 )
 
 const (
-	wavFilePath = "examples/12k_1ch.wav"
-	sampleRate  = 12000
+	wavFilePath = "examples/yanka_48k_2ch.wav"
+	sampleRate  = 48000
+	numChannels = 2
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 
 	cfg := opus.Config{
 		SampleRate:  sampleRate,
-		NumChannels: opus.NumChannels,
+		NumChannels: numChannels,
 		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
 	}
 	packer, err := packer.New(cfg)

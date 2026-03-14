@@ -29,7 +29,7 @@ For the most up-to-date list of dependencies, feel free to check the `Dockerfile
 
 ### Sample rates and channels support
 - Supported sample rates: **8000 Hz**, **12000 Hz**, **16000 Hz**, **24000 Hz**, **48000 Hz**
-- Only **1 channel** (mono) supported at the moment. Feel free to add a PR with different audio settings.
+- Supported channels: **1** (mono), **2** (stereo)
 
 These are the only sample rates supported by the [Opus codec (RFC 6716)](https://www.rfc-editor.org/rfc/rfc6716#section-2). Opus internally operates at 48 kHz but accepts input at these five rates, resampling as needed. Other rates (e.g. 44100 Hz) must be resampled to one of the supported rates before encoding.
 
