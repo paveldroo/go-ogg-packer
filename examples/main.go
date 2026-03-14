@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	wavFilePath = "examples/24k_1ch.wav"
-	sampleRate  = 24000
+	wavFilePath = "examples/12k_1ch.wav"
+	sampleRate  = 12000
 )
 
 func main() {
