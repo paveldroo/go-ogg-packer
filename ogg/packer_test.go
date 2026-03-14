@@ -4,13 +4,13 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
-	"path"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
+	"github.com/paveldroo/go-ogg-packer/tests/testutil"
 )
 
 func TestPacker(t *testing.T) {
@@ -69,7 +69,7 @@ func TestPacker(t *testing.T) {
 			frameSizeSamples := opus.FrameSizeSamples(cfg)
 
 			opusFilename := fmt.Sprintf("../tests/testdata/opus_raw/%s.opus_raw", tt.fileBase)
-			rawOpusData := rawOpusPackets(t, opusFilename)
+			rawOpusData := testutil.RawOpusPackets(t, opusFilename)
 			for _, packet := range rawOpusData {
 				if err := packer.AddChunk(packet, false, frameSizeSamples); err != nil {
 					t.Fatalf("send opus chunk to packer: %s", err.Error())
@@ -82,7 +82,7 @@ func TestPacker(t *testing.T) {
 			}
 
 			if genNewReference != "" {
-				writeOggFile(t, fmt.Sprintf("../tests/testdata/want/ogg/%s.ogg", tt.fileBase), oggData)
+				testutil.WriteOggFile(t, fmt.Sprintf("../tests/testdata/want/ogg/%s.ogg", tt.fileBase), oggData)
 				t.Logf("generated reference file: tests/testdata/want/ogg/%s.ogg", tt.fileBase)
 				return
 			}
@@ -170,7 +170,7 @@ func TestPacker_EOS(t *testing.T) {
 		}
 
 		opusFilename := "../tests/testdata/opus_raw/48k_1ch.opus_raw"
-		packets := rawOpusPackets(t, opusFilename)
+		packets := testutil.RawOpusPackets(t, opusFilename)
 		for _, packet := range packets {
 			if err := packer.AddChunk(packet, false, 2880); err != nil {
 				t.Fatalf("add chunk: %s", err)
@@ -192,7 +192,7 @@ func TestPacker_EOS(t *testing.T) {
 		}
 
 		opusFilename := "../tests/testdata/opus_raw/48k_1ch.opus_raw"
-		packets := rawOpusPackets(t, opusFilename)
+		packets := testutil.RawOpusPackets(t, opusFilename)
 		for i, packet := range packets {
 			eos := i == len(packets)-1
 			if err := packer.AddChunk(packet, eos, 2880); err != nil {
@@ -224,34 +224,5 @@ func assertLastPageHasEOS(t *testing.T, data []byte) {
 	}
 	if data[lastPageStart+5]&0x04 == 0 { // 0x04 = EOS flag per RFC 3533
 		t.Fatal("last page does not have EOS flag set")
-	}
-}
-
-func rawOpusPackets(t *testing.T, fname string) [][]byte {
-	t.Helper()
-
-	f, err := os.Open(fname)
-	if err != nil {
-		t.Fatalf("read raw opus file: %s", err.Error())
-	}
-	decoder := gob.NewDecoder(f)
-	var audioData [][]byte
-	if err := decoder.Decode(&audioData); err != nil {
-		t.Fatalf("decode data from file: %s", err.Error())
-	}
-
-	return audioData
-}
-
-func writeOggFile(t *testing.T, fname string, data []byte) {
-	t.Helper()
-	wDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("get current work directory: %s", err.Error())
-	}
-
-	var fPath = path.Join(wDir, fname)
-	if err := os.WriteFile(fPath, data, 0666); err != nil {
-		t.Fatalf("write result file: %s", err.Error())
 	}
 }
