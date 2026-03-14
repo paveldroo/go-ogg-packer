@@ -1,21 +1,21 @@
 package ogg_test
 
 import (
-	"encoding/gob"
 	"fmt"
 	"os"
-	"path"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
+	"github.com/paveldroo/go-ogg-packer/tests/testutil"
 )
 
+// TestPacker compares OGG packer output against reference OGG files.
+// References must be generated before running: task generate-ref
+// Or run everything together: task test
 func TestPacker(t *testing.T) {
-	genNewReference := os.Getenv("GENERATE_NEW_REFERENCE")
-
 	tests := []struct {
 		name       string
 		fileBase   string
@@ -68,8 +68,8 @@ func TestPacker(t *testing.T) {
 			}
 			frameSizeSamples := opus.FrameSizeSamples(cfg)
 
-			opusFilename := fmt.Sprintf("testdata/opus_raw/%s.opus_raw", tt.fileBase)
-			rawOpusData := rawOpusPackets(t, opusFilename)
+			opusFilename := fmt.Sprintf("../tests/testdata/opus_raw/%s.opus_raw", tt.fileBase)
+			rawOpusData := testutil.RawOpusPackets(t, opusFilename)
 			for _, packet := range rawOpusData {
 				if err := packer.AddChunk(packet, false, frameSizeSamples); err != nil {
 					t.Fatalf("send opus chunk to packer: %s", err.Error())
@@ -81,13 +81,7 @@ func TestPacker(t *testing.T) {
 				t.Fatalf("read all pages from packer: %s", err.Error())
 			}
 
-			if genNewReference != "" {
-				writeOggFile(t, fmt.Sprintf("testdata/want/%s.ogg", tt.fileBase), oggData)
-				t.Logf("generated reference file: testdata/want/%s.ogg", tt.fileBase)
-				return
-			}
-
-			refFilename := fmt.Sprintf("testdata/want/%s.ogg", tt.fileBase)
+			refFilename := fmt.Sprintf("../tests/testdata/want/ogg/%s.ogg", tt.fileBase)
 			refData, err := os.ReadFile(refFilename)
 			if err != nil {
 				t.Fatalf("open reference file: %s", err.Error())
@@ -100,68 +94,6 @@ func TestPacker(t *testing.T) {
 	}
 }
 
-// TestGenerateOpusRaw generates .opus_raw fixture files by encoding PCM source data.
-// Run with: GENERATE_OPUS_RAW=true go test ./ogg/ -run TestGenerateOpusRaw -v
-func TestGenerateOpusRaw(t *testing.T) {
-	if os.Getenv("GENERATE_OPUS_RAW") == "" {
-		t.Skip("set GENERATE_OPUS_RAW=true to generate opus_raw fixtures")
-	}
-
-	rates := []struct {
-		sampleRate int
-		fileBase   string
-		pcmSource  string
-	}{
-		{8000, "8k_1ch", "../testdata/8k_1ch.pcm"},
-		{12000, "12k_1ch", "../testdata/12k_1ch.pcm"},
-		{16000, "16k_1ch", "../testdata/16k_1ch.pcm"},
-		{24000, "24k_1ch", "../testdata/24k_1ch.pcm"},
-		{48000, "48k_1ch", "../testdata/48k_1ch.pcm"},
-	}
-
-	for _, r := range rates {
-		t.Run(r.fileBase, func(t *testing.T) {
-			cfg := opus.Config{
-				SampleRate:  r.sampleRate,
-				NumChannels: opus.NumChannels,
-				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
-			}
-			encoder, err := opus.NewEncoder(cfg)
-			if err != nil {
-				t.Fatalf("create encoder: %s", err)
-			}
-
-			pcmBytes, err := os.ReadFile(r.pcmSource)
-			if err != nil {
-				t.Fatalf("read pcm: %s", err)
-			}
-
-			samples := make([]int16, len(pcmBytes)/2)
-			for i := range samples {
-				samples[i] = int16(pcmBytes[2*i]) | int16(pcmBytes[2*i+1])<<8
-			}
-
-			packets, err := encoder.EncodeWithPadding(samples)
-			if err != nil {
-				t.Fatalf("encode: %s", err)
-			}
-
-			outPath := fmt.Sprintf("testdata/opus_raw/%s.opus_raw", r.fileBase)
-			f, err := os.Create(outPath)
-			if err != nil {
-				t.Fatalf("create file: %s", err)
-			}
-			defer f.Close()
-
-			if err := gob.NewEncoder(f).Encode(packets); err != nil {
-				t.Fatalf("gob encode: %s", err)
-			}
-
-			t.Logf("generated %s (%d packets)", outPath, len(packets))
-		})
-	}
-}
-
 func TestPacker_EOS(t *testing.T) {
 	t.Run("ReadPages patches EOS on last page", func(t *testing.T) {
 		packer, err := ogg.New(1, 48000)
@@ -169,8 +101,8 @@ func TestPacker_EOS(t *testing.T) {
 			t.Fatalf("create ogg packer: %s", err)
 		}
 
-		opusFilename := "testdata/opus_raw/48k_1ch.opus_raw"
-		packets := rawOpusPackets(t, opusFilename)
+		opusFilename := "../tests/testdata/opus_raw/48k_1ch.opus_raw"
+		packets := testutil.RawOpusPackets(t, opusFilename)
 		for _, packet := range packets {
 			if err := packer.AddChunk(packet, false, 2880); err != nil {
 				t.Fatalf("add chunk: %s", err)
@@ -191,8 +123,8 @@ func TestPacker_EOS(t *testing.T) {
 			t.Fatalf("create ogg packer: %s", err)
 		}
 
-		opusFilename := "testdata/opus_raw/48k_1ch.opus_raw"
-		packets := rawOpusPackets(t, opusFilename)
+		opusFilename := "../tests/testdata/opus_raw/48k_1ch.opus_raw"
+		packets := testutil.RawOpusPackets(t, opusFilename)
 		for i, packet := range packets {
 			eos := i == len(packets)-1
 			if err := packer.AddChunk(packet, eos, 2880); err != nil {
@@ -224,34 +156,5 @@ func assertLastPageHasEOS(t *testing.T, data []byte) {
 	}
 	if data[lastPageStart+5]&0x04 == 0 { // 0x04 = EOS flag per RFC 3533
 		t.Fatal("last page does not have EOS flag set")
-	}
-}
-
-func rawOpusPackets(t *testing.T, fname string) [][]byte {
-	t.Helper()
-
-	f, err := os.Open(fname)
-	if err != nil {
-		t.Fatalf("read raw opus file: %s", err.Error())
-	}
-	decoder := gob.NewDecoder(f)
-	var audioData [][]byte
-	if err := decoder.Decode(&audioData); err != nil {
-		t.Fatalf("decode data from file: %s", err.Error())
-	}
-
-	return audioData
-}
-
-func writeOggFile(t *testing.T, fname string, data []byte) {
-	t.Helper()
-	wDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("get current work directory: %s", err.Error())
-	}
-
-	var fPath = path.Join(wDir, fname)
-	if err := os.WriteFile(fPath, data, 0666); err != nil {
-		t.Fatalf("write result file: %s", err.Error())
 	}
 }
