@@ -11,9 +11,9 @@ import (
 	extopus "gopkg.in/hraban/opus.v2"
 	extogg "mccoy.space/g/ogg"
 
-	packer "github.com/paveldroo/go-ogg-packer"
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
+	"github.com/paveldroo/go-ogg-packer/packer"
 )
 
 // GeneratePackerRef runs the full packer pipeline and writes a PCM reference file.
