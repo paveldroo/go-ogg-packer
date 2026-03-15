@@ -58,7 +58,7 @@ func (s *Packer) GetResult() ([]byte, error) {
 		return nil, fmt.Errorf("flush buffer: %w", err)
 	}
 
-	oggPages, err := s.oggPacker.ReadPages()
+	oggPages, err := s.oggPacker.FlushPages()
 	if err != nil {
 		return nil, fmt.Errorf("read pages: %w", err)
 	}

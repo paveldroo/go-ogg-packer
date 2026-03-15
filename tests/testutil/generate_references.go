@@ -97,7 +97,7 @@ func GenerateOggRef(opusRawFname, refFname string, channels, sampleRate int) err
 		}
 	}
 
-	oggData, err := p.ReadPages()
+	oggData, err := p.FlushPages()
 	if err != nil {
 		return fmt.Errorf("read pages: %w", err)
 	}

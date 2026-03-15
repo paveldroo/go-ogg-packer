@@ -10,7 +10,7 @@ import (
 	"github.com/paveldroo/go-ogg-packer/opus"
 )
 
-const preSkip = 312 // libopus encoder lookahead in 48kHz samples (per RFC 7845)
+const PreSkip = 312 // libopus encoder lookahead in 48kHz samples (per RFC 7845)
 
 type Packer struct {
 	channelCount uint8
@@ -63,8 +63,23 @@ func (p *Packer) AddChunk(data []byte, eos bool, samplesCount int) error {
 	return nil
 }
 
-// ReadPages returns all buffered ogg pages and sets the EOS flag on the last page.
+// ReadPages returns all buffered ogg pages without setting the EOS flag.
+// Use for mid-stream reads in streaming mode.
 func (p *Packer) ReadPages() ([]byte, error) {
+	b := p.buffer.Bytes()
+	if len(b) == 0 {
+		return nil, errors.New("received empty ogg data buffer")
+	}
+
+	out := make([]byte, len(b))
+	copy(out, b)
+	p.buffer.Reset()
+	return out, nil
+}
+
+// FlushPages returns all buffered ogg pages and sets the EOS flag on the last page.
+// Use as the final call to close the stream.
+func (p *Packer) FlushPages() ([]byte, error) {
 	b := p.buffer.Bytes()
 	if len(b) == 0 {
 		return nil, errors.New("received empty ogg data buffer")
@@ -96,7 +111,7 @@ func (p *Packer) init() error {
 		return fmt.Errorf("add tags packet: %w", err)
 	}
 
-	p.granulePos = preSkip
+	p.granulePos = PreSkip
 
 	return nil
 }
@@ -156,7 +171,7 @@ func header(channelCount uint8, sampleRate uint32) []byte {
 	header[8] = 1 // version number
 	header[9] = channelCount
 
-	binary.LittleEndian.PutUint16(header[10:12], preSkip)
+	binary.LittleEndian.PutUint16(header[10:12], PreSkip)
 	binary.LittleEndian.PutUint32(header[12:16], sampleRate)
 	binary.LittleEndian.PutUint16(header[16:18], 0)
 
