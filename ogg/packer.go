@@ -96,6 +96,8 @@ func (p *Packer) init() error {
 		return fmt.Errorf("add tags packet: %w", err)
 	}
 
+	p.granulePos = preSkip
+
 	return nil
 }
 
