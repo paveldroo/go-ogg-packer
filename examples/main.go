@@ -10,8 +10,8 @@ import (
 	"path"
 	"time"
 
-	packer "github.com/paveldroo/go-ogg-packer"
 	"github.com/paveldroo/go-ogg-packer/opus"
+	"github.com/paveldroo/go-ogg-packer/packer"
 )
 
 const (

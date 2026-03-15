@@ -11,9 +11,9 @@ import (
 	extopus "gopkg.in/hraban/opus.v2"
 	extogg "mccoy.space/g/ogg"
 
-	packer "github.com/paveldroo/go-ogg-packer"
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
+	"github.com/paveldroo/go-ogg-packer/packer"
 )
 
 // GeneratePackerRef runs the full packer pipeline and writes a PCM reference file.
@@ -97,7 +97,7 @@ func GenerateOggRef(opusRawFname, refFname string, channels, sampleRate int) err
 		}
 	}
 
-	oggData, err := p.ReadPages()
+	oggData, err := p.FlushPages()
 	if err != nil {
 		return fmt.Errorf("read pages: %w", err)
 	}

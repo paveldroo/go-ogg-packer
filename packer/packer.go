@@ -51,6 +51,8 @@ func (s *Packer) SendPCMChunk(chunk []int16) error {
 	return nil
 }
 
+// GetResult flushes all PCM data and returns the complete OGG file.
+// For streaming, use the ogg package directly with ReadPages/FlushPages.
 func (s *Packer) GetResult() ([]byte, error) {
 	defer s.oggPacker.Close()
 
@@ -58,7 +60,7 @@ func (s *Packer) GetResult() ([]byte, error) {
 		return nil, fmt.Errorf("flush buffer: %w", err)
 	}
 
-	oggPages, err := s.oggPacker.ReadPages()
+	oggPages, err := s.oggPacker.FlushPages()
 	if err != nil {
 		return nil, fmt.Errorf("read pages: %w", err)
 	}
