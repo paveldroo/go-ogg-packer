@@ -4,9 +4,7 @@ import (
 	"log"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/paveldroo/go-ogg-packer/opus"
 	"github.com/paveldroo/go-ogg-packer/packer"
 	"github.com/paveldroo/go-ogg-packer/tests/testutil"
 )
@@ -110,13 +108,8 @@ func TestPacker(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			sourcePCMData := testutil.PCMData(t, tt.sourceFname)
-			cfg := opus.Config{
-				SampleRate:  tt.sampleRate,
-				NumChannels: tt.channels,
-				FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
-			}
 
-			p, err := packer.New(cfg, testutil.TestSerialNo)
+			p, err := packer.New(tt.channels, tt.sampleRate, testutil.TestSerialNo)
 			if err != nil {
 				t.Fatalf("create new packer: %s", err.Error())
 			}

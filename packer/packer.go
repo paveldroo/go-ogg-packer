@@ -2,6 +2,7 @@ package packer
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/paveldroo/go-ogg-packer/ogg"
 	"github.com/paveldroo/go-ogg-packer/opus"
@@ -17,13 +18,19 @@ type Packer struct {
 	frameSizeSamples int
 }
 
-func New(cfg opus.Config, serialNo uint32) (*Packer, error) {
+func New(numChannels int, sampleRate int, serialNo uint32) (*Packer, error) {
+	cfg := opus.Config{
+		SampleRate:  sampleRate,
+		NumChannels: numChannels,
+		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
+	}
+
 	encoder, err := opus.NewEncoder(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("create opus encoder: %s", err)
 	}
 
-	packer, err := ogg.New(uint8(cfg.NumChannels), uint32(cfg.SampleRate), serialNo)
+	packer, err := ogg.New(uint8(numChannels), uint32(sampleRate), serialNo)
 	if err != nil {
 		return nil, fmt.Errorf("create ogg packer: %w", err)
 	}
@@ -35,6 +42,10 @@ func New(cfg opus.Config, serialNo uint32) (*Packer, error) {
 	}, nil
 }
 
+// SendPCMChunk encodes PCM data and packs it into OGG.
+// Chunk must be PCM 16-bit little-endian audio samples.
+// Chunk size is arbitrary — the packer buffers internally, so callers
+// don't need to align chunks to frame boundaries.
 func (s *Packer) SendPCMChunk(chunk []int16) error {
 	s.pcmBuffer = append(s.pcmBuffer, chunk...)
 	currentOpusPackets, pos, err := s.opusEncoder.Encode(s.pcmBuffer)
