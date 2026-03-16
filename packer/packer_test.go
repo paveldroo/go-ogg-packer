@@ -119,12 +119,12 @@ func TestPacker(t *testing.T) {
 				if end > len(sourcePCMData) {
 					end = len(sourcePCMData)
 				}
-				if err := p.SendPCMChunk(sourcePCMData[i:end]); err != nil {
+				if err := p.AddPCMChunk(sourcePCMData[i:end]); err != nil {
 					t.Fatalf("send PCM chunk: %s", err.Error())
 				}
 			}
 
-			audioData, err := p.GetResult()
+			audioData, err := p.Result()
 			if err != nil {
 				log.Fatalf("get result from packer: %s", err.Error())
 			}

@@ -42,11 +42,11 @@ func New(numChannels int, sampleRate int, serialNo uint32) (*Packer, error) {
 	}, nil
 }
 
-// SendPCMChunk encodes PCM data and packs it into OGG.
+// AddPCMChunk encodes PCM data and packs it into OGG.
 // Chunk must be PCM 16-bit little-endian audio samples.
 // Chunk size is arbitrary — the packer buffers internally, so callers
 // don't need to align chunks to frame boundaries.
-func (s *Packer) SendPCMChunk(chunk []int16) error {
+func (s *Packer) AddPCMChunk(chunk []int16) error {
 	s.pcmBuffer = append(s.pcmBuffer, chunk...)
 	currentOpusPackets, pos, err := s.opusEncoder.Encode(s.pcmBuffer)
 	if err != nil {
@@ -62,9 +62,9 @@ func (s *Packer) SendPCMChunk(chunk []int16) error {
 	return nil
 }
 
-// GetResult flushes all PCM data and returns the complete OGG file.
+// Result flushes all PCM data and returns the complete OGG file.
 // For streaming, use the ogg package directly with ReadPages/FlushPages.
-func (s *Packer) GetResult() ([]byte, error) {
+func (s *Packer) Result() ([]byte, error) {
 	defer s.oggPacker.Close()
 
 	if err := s.flushPCMBuffer(); err != nil {

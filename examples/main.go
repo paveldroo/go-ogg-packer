@@ -33,12 +33,12 @@ func main() {
 		if end > len(pcmData) {
 			end = len(pcmData)
 		}
-		if err := p.SendPCMChunk(pcmData[i:end]); err != nil {
+		if err := p.AddPCMChunk(pcmData[i:end]); err != nil {
 			log.Fatalf("send s16 chunk: %s", err.Error())
 		}
 	}
 
-	audioContent, err := p.GetResult()
+	audioContent, err := p.Result()
 	if err != nil {
 		log.Fatalf("get result from packer: %s", err.Error())
 	}
