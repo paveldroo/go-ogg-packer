@@ -38,12 +38,12 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate, channels int) e
 		if end > len(sourcePCM) {
 			end = len(sourcePCM)
 		}
-		if err := p.SendPCMChunk(sourcePCM[i:end]); err != nil {
+		if err := p.AddPCMChunk(sourcePCM[i:end]); err != nil {
 			return fmt.Errorf("send PCM chunk: %w", err)
 		}
 	}
 
-	audioData, err := p.GetResult()
+	audioData, err := p.Result()
 	if err != nil {
 		return fmt.Errorf("get result: %w", err)
 	}
