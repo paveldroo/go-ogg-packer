@@ -28,13 +28,7 @@ func GeneratePackerRef(sourceFname, refFname string, sampleRate, channels int) e
 		sourcePCM[i] = int16(pcmBytes[2*i]) | int16(pcmBytes[2*i+1])<<8
 	}
 
-	cfg := opus.Config{
-		SampleRate:  sampleRate,
-		NumChannels: channels,
-		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
-	}
-
-	p, err := packer.New(cfg, TestSerialNo)
+	p, err := packer.New(channels, sampleRate, TestSerialNo)
 	if err != nil {
 		return fmt.Errorf("create packer: %w", err)
 	}

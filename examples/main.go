@@ -10,7 +10,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/paveldroo/go-ogg-packer/opus"
 	"github.com/paveldroo/go-ogg-packer/packer"
 )
 
@@ -23,13 +22,8 @@ const (
 func main() {
 	pcmData := pcmFromWav()
 
-	cfg := opus.Config{
-		SampleRate:  sampleRate,
-		NumChannels: numChannels,
-		FrameSize:   time.Duration(opus.FrameSize) * time.Millisecond,
-	}
 	serialNo := rand.New(rand.NewSource(time.Now().UnixNano())).Uint32()
-	p, err := packer.New(cfg, serialNo)
+	p, err := packer.New(numChannels, sampleRate, serialNo)
 	if err != nil {
 		log.Fatalf("create new packer: %s", err.Error())
 	}
